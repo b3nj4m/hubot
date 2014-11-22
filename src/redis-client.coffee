@@ -40,13 +40,13 @@ class RedisClient
 
     if @info.auth
       @authed = Q.ninvoke @client, "auth", @info.auth.split(":")[1]
+
+      @authed.then ->
+        robot.logger.info "Successfully authenticated to Redis"
+      @authed.fail ->
+        robot.logger.error "Failed to authenticate to Redis"
     else
       @authed = Q()
-
-    @authed.then ->
-      robot.logger.info "Successfully authenticated to Redis"
-    @authed.fail ->
-      robot.logger.error "Failed to authenticate to Redis"
 
     @ready = Q.all [@connected, @authed]
 
