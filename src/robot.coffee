@@ -1,3 +1,4 @@
+Q              = require 'q'
 Fs             = require 'fs'
 Log            = require 'log'
 Path           = require 'path'
@@ -6,6 +7,8 @@ HttpClient     = require 'scoped-http-client'
 
 User = require './user'
 Brain = require './brain'
+RedisClient = require './redis-client'
+RedisBrain = require './redis-brain'
 Response = require './response'
 {Listener,TextListener} = require './listener'
 {EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
@@ -36,9 +39,10 @@ class Robot
   # adapter     - A String of the adapter name.
   # httpd       - A Boolean whether to enable the HTTP daemon.
   # name        - A String of the robot name, defaults to Hubot.
+  # useRedis    - A boolean indicating whether to depend on Redis for storage
   #
   # Returns nothing.
-  constructor: (adapterPath, adapter, httpd, name = 'Hubot') ->
+  constructor: (adapterPath, adapter, httpd, name = 'Hubot', useRedis = true) ->
     @name      = name
     @events    = new EventEmitter
     @brain     = new Brain @
@@ -50,6 +54,13 @@ class Robot
     @logger    = new Log process.env.HUBOT_LOG_LEVEL or 'info'
     @pingIntervalId = null
 
+    #TODO make this db agnostic
+    if useRedis
+      @redisClient = new RedisClient @
+      @ready = @redisClient.ready
+    else
+      @ready = Q()
+
     @parseVersion()
     if httpd
       @setupExpress()
@@ -60,6 +71,9 @@ class Robot
 
     @adapterName   = adapter
     @errorHandlers = []
+
+    @on "running", =>
+      @brain.resetSaveInterval 5
 
     @on 'error', (err, msg) =>
       @invokeErrorHandlers(err, msg)
@@ -212,9 +226,14 @@ class Robot
   loadFile: (path, file) ->
     ext  = Path.extname file
     full = Path.join path, Path.basename(file, ext)
+
+    if @useRedis
+      #create a namespaced redis brain for each script
+      brain = new RedisBrain(@, full, @redisClient)
+
     if require.extensions[ext]
       try
-        require(full) @
+        require(full)(@, brain)
         @parseHelp Path.join(path, file)
       catch error
         @logger.error "Unable to load #{full}: #{error.stack}"
@@ -226,41 +245,44 @@ class Robot
   #
   # Returns nothing.
   load: (path) ->
-    @logger.debug "Loading scripts from #{path}"
+    @ready.then =>
+      @logger.debug "Loading scripts from #{path}"
 
-    if Fs.existsSync(path)
-      for file in Fs.readdirSync(path).sort()
-        @loadFile path, file
+      if Fs.existsSync(path)
+        for file in Fs.readdirSync(path).sort()
+          @loadFile path, file
 
   # Public: Load scripts specfied in the `hubot-scripts.json` file.
   #
   # path    - A String path to the hubot-scripts files.
   # scripts - An Array of scripts to load.
   #
-  # Returns nothing.
+  # Returns promise.
   loadHubotScripts: (path, scripts) ->
-    @logger.debug "Loading hubot-scripts from #{path}"
-    for script in scripts
-      @loadFile path, script
+    @ready.then =>
+      @logger.debug "Loading hubot-scripts from #{path}"
+      for script in scripts
+        @loadFile path, script
 
   # Public: Load scripts from packages specfied in the
   # `external-scripts.json` file.
   #
   # packages - An Array of packages containing hubot scripts to load.
   #
-  # Returns nothing.
+  # Returns promise.
   loadExternalScripts: (packages) ->
-    @logger.debug "Loading external-scripts from npm packages"
-    try
-      if packages instanceof Array
-        for pkg in packages
-          require(pkg)(@)
-      else
-        for pkg, scripts of packages
-          require(pkg)(@, scripts)
-    catch err
-      @logger.error "Error loading scripts from npm package - #{err.stack}"
-      process.exit(1)
+    @ready.then =>
+      @logger.debug "Loading external-scripts from npm packages"
+      try
+        if packages instanceof Array
+          for pkg in packages
+            require(pkg)(@)
+        else
+          for pkg, scripts of packages
+            require(pkg)(@, scripts)
+      catch err
+        @logger.error "Error loading scripts from npm package - #{err.stack}"
+        process.exit(1)
 
   # Setup the Express server's defaults.
   #
@@ -443,6 +465,9 @@ class Robot
     clearInterval @pingIntervalId if @pingIntervalId?
     @adapter.close()
     @brain.close()
+    
+    if @redisClient
+      @redisClient.close()
 
   # Public: The version of Hubot from npm
   #
