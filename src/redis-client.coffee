@@ -31,11 +31,7 @@ class RedisClient
     connectedDefer = Q.defer()
     @connected = connectedDefer.promise
 
-    @client.on "connect", ->
-      connectedDefer.resolve()
-    @client.once "error", (err) =>
-      if @connected.isPending()
-        connectedDefer.reject err
+    @client.on "connect", connectedDefer.resolve.bind(connectedDefer)
 
     @connected.then ->
       robot.logger.info "Successfully connected to Redis"
