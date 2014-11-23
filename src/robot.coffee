@@ -245,7 +245,7 @@ class Robot
       @logger.debug "Loading scripts from #{path}"
 
       if Fs.existsSync(path)
-        for file in Fs.readdirSync(path).sort()
+        return Q.all Fs.readdirSync(path).sort().map (file) =>
           @loadFile path, file
 
   # Public: Load scripts specfied in the `hubot-scripts.json` file.
@@ -257,7 +257,8 @@ class Robot
   loadHubotScripts: (path, scripts) ->
     @ready.then =>
       @logger.debug "Loading hubot-scripts from #{path}"
-      for script in scripts
+
+      Q.all scripts.map (script) =>
         @loadFile path, script
 
   # Public: Load scripts from packages specfied in the
@@ -275,8 +276,9 @@ class Robot
             require(pkg) @, @brain.segment(pkg)
         else
           for pkg, scripts of packages
-            #TODO brain segment for each script?
-            require(pkg) @, scripts
+            #brain segment for each script appropriate?
+            require(pkg) @, scripts, scripts.map (script) =>
+              @brain.segment(script)
       catch err
         @logger.error "Error loading scripts from npm package - #{err.stack}"
         process.exit(1)

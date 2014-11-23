@@ -141,6 +141,5 @@ else
       console.log "OK"
       process.exit 0
 
-  robot.adapterReady.then ->
-    robot.adapter.connected.then(loadScripts)
-    robot.run()
+  robot.ready.then ->
+    loadScripts().then(robot.run.bind(robot))
