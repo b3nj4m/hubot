@@ -6,9 +6,6 @@ HttpClient     = require 'scoped-http-client'
 {EventEmitter} = require 'events'
 
 User = require './user'
-Brain = require './brain'
-RedisClient = require './redis-client'
-RedisBrain = require './redis-brain'
 Response = require './response'
 {Listener,TextListener} = require './listener'
 {EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
@@ -16,6 +13,11 @@ Response = require './response'
 HUBOT_DEFAULT_ADAPTERS = [
   'campfire'
   'shell'
+]
+
+HUBOT_DEFAULT_BRAINS = [
+  'dumb'
+  'redis'
 ]
 
 HUBOT_DOCUMENTATION_SECTIONS = [
@@ -37,15 +39,15 @@ class Robot
   #
   # adapterPath - A String of the path to local adapters.
   # adapter     - A String of the adapter name.
+  # brainPath - A String of the path to local brains.
+  # brain     - A String of the brain name.
   # httpd       - A Boolean whether to enable the HTTP daemon.
   # name        - A String of the robot name, defaults to Hubot.
-  # useRedis    - A boolean indicating whether to depend on Redis for storage
   #
   # Returns nothing.
-  constructor: (adapterPath, adapter, httpd, name = 'Hubot', useRedis = true) ->
+  constructor: (adapterPath, adapter, brainPath, brain, httpd, name = 'Hubot') ->
     @name      = name
     @events    = new EventEmitter
-    @brain     = new Brain @
     @alias     = false
     @adapter   = null
     @Response  = Response
@@ -54,20 +56,17 @@ class Robot
     @logger    = new Log process.env.HUBOT_LOG_LEVEL or 'info'
     @pingIntervalId = null
 
-    #TODO make this db agnostic
-    if useRedis
-      @redisClient = new RedisClient @
-      @ready = @redisClient.ready
-    else
-      @ready = Q()
-
     @parseVersion()
     if httpd
       @setupExpress()
     else
       @setupNullRouter()
 
-    @loadAdapter adapterPath, adapter
+    @brainReady = @loadBrain brainPath, brain
+    @adapterReady = @brainReady.then =>
+      @loadAdapter adapterPath, adapter
+
+    @ready = Q.all [@brainReady, @adapterReady]
 
     @adapterName   = adapter
     @errorHandlers = []
@@ -227,13 +226,9 @@ class Robot
     ext  = Path.extname file
     full = Path.join path, Path.basename(file, ext)
 
-    if @useRedis
-      #create a namespaced redis brain for each script
-      brain = new RedisBrain(@, full, @redisClient)
-
     if require.extensions[ext]
       try
-        require(full)(@, brain)
+        require(full) @
         @parseHelp Path.join(path, file)
       catch error
         @logger.error "Unable to load #{full}: #{error.stack}"
@@ -276,10 +271,10 @@ class Robot
       try
         if packages instanceof Array
           for pkg in packages
-            require(pkg)(@)
+            require(pkg) @
         else
           for pkg, scripts of packages
-            require(pkg)(@, scripts)
+            require(pkg) @, scripts
       catch err
         @logger.error "Error loading scripts from npm package - #{err.stack}"
         process.exit(1)
@@ -333,12 +328,33 @@ class Robot
       delete: ()=> @logger.warning msg
 
 
+  # Load the brain Hubot is going to use.
+  #
+  # path    - A String of the path to brain if local.
+  # brain - A String of the brain name to use.
+  #
+  # Returns promise.
+  loadBrain: (path, brain) ->
+    @logger.debug "Loading brain #{brain}"
+
+    try
+      path = if brain in HUBOT_DEFAULT_BRAINS
+        "#{path}/#{brain}"
+      else
+        "hubot-#{brain}"
+
+      @brain = new (require(path)) @
+      return @brain.ready or Q(@brain)
+    catch err
+      @logger.error "Cannot load brain #{brain} - #{err.stack}"
+      process.exit(1)
+
   # Load the adapter Hubot is going to use.
   #
   # path    - A String of the path to adapter if local.
   # adapter - A String of the adapter name to use.
   #
-  # Returns nothing.
+  # Returns promise.
   loadAdapter: (path, adapter) ->
     @logger.debug "Loading adapter #{adapter}"
 
@@ -349,8 +365,9 @@ class Robot
         "hubot-#{adapter}"
 
       @adapter = require(path).use @
+      return @adapter.ready or Q(@adapter)
     catch err
-      @logger.error "Cannot load adapter #{adapter} - #{err}"
+      @logger.error "Cannot load adapter #{adapter} - #{err.stack}"
       process.exit(1)
 
   # Public: Help Commands for Running Scripts.

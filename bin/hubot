@@ -2,6 +2,7 @@
 # vim:ft=coffee ts=2 sw=2 et :
 # -*- mode:coffee -*-
 
+Q        = require 'q'
 Hubot    = require '..'
 
 Fs       = require 'fs'
@@ -9,6 +10,7 @@ OptParse = require 'optparse'
 Path     = require 'path'
 
 Switches = [
+  [ "-b", "--brain BRAIN",     "The Brain to use" ],
   [ "-a", "--adapter ADAPTER", "The Adapter to use" ],
   [ "-c", "--create PATH",     "Create a deployable hubot" ],
   [ "-d", "--disable-httpd",   "Disable the HTTP server" ],
@@ -21,6 +23,7 @@ Switches = [
 ]
 
 Options =
+  brain:       process.env.HUBOT_BRAIN   or "dumb"
   adapter:     process.env.HUBOT_ADAPTER or "shell"
   alias:       process.env.HUBOT_ALIAS   or false
   create:      process.env.HUBOT_CREATE  or false
@@ -32,6 +35,9 @@ Options =
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage hubot [options]"
+
+Parser.on "brain", (opt, value) ->
+  Options.brain = value
 
 Parser.on "adapter", (opt, value) ->
   Options.adapter = value
@@ -79,8 +85,9 @@ if Options.create
 
 else
   adapterPath = Path.join __dirname, "..", "src", "adapters"
+  brainPath = Path.join __dirname, "..", "src", "brains"
 
-  robot = Hubot.loadBot adapterPath, Options.adapter, Options.enableHttpd, Options.name
+  robot = Hubot.loadBot adapterPath, Options.adapter, brainPath, Options.brain, Options.enableHttpd, Options.name
 
   if Options.version
     console.log robot.version
@@ -89,11 +96,13 @@ else
   robot.alias = Options.alias
 
   loadScripts = ->
+    loadingScripts = []
+
     scriptsPath = Path.resolve ".", "scripts"
-    robot.load scriptsPath
+    loadingScripts.push(robot.load scriptsPath)
 
     scriptsPath = Path.resolve ".", "src", "scripts"
-    robot.load scriptsPath
+    loadingScripts.push(robot.load scriptsPath)
 
     hubotScripts = Path.resolve ".", "hubot-scripts.json"
     if Fs.existsSync(hubotScripts)
@@ -102,7 +111,7 @@ else
         try
           scripts = JSON.parse data
           scriptsPath = Path.resolve "node_modules", "hubot-scripts", "src", "scripts"
-          robot.loadHubotScripts scriptsPath, scripts
+          loadingScripts.push(robot.loadHubotScripts(scriptsPath, scripts))
         catch err
           console.error "Error parsing JSON data from hubot-scripts.json: #{err}"
           process.exit(1)
@@ -116,20 +125,22 @@ else
           catch err
             console.error "Error parsing JSON data from external-scripts.json: #{err}"
             process.exit(1)
-          robot.loadExternalScripts scripts
+          loadingScripts.push(robot.loadExternalScripts scripts)
 
     for path in Options.scripts
       if path[0] == '/'
         scriptsPath = path
       else
         scriptsPath = Path.resolve ".", path
-      robot.load scriptsPath
+      loadingScripts.push(robot.load scriptsPath)
+
+    Q.all(loadingScripts)
 
   if Options.configCheck
-    loadScripts()
-    console.log "OK"
-    process.exit 0
+    loadScripts().then ->
+      console.log "OK"
+      process.exit 0
 
-  robot.adapter.on 'connected', loadScripts
-
-  robot.run()
+  robot.adapterReady.then ->
+    robot.adapter.connected.then(loadScripts)
+    robot.run()

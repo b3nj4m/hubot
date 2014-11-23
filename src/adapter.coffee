@@ -1,10 +1,14 @@
 {EventEmitter} = require 'events'
+Q = require 'q'
 
 class Adapter extends EventEmitter
   # An adapter is a specific interface to a chat source for robots.
   #
   # robot - A Robot instance.
-  constructor: (@robot) ->
+  constructor: (@robot, @brain) ->
+    @connectedDefer = Q.defer()
+    @connected = @connectedDefer.promise
+    @.on 'connected', @connectedDefer.resolve.bind(@connectedDefer)
 
   # Public: Raw method for sending data back to the chat source. Extend this.
   #
@@ -67,21 +71,21 @@ class Adapter extends EventEmitter
 
   # Public: Get an Array of User objects stored in the brain.
   #
-  # Returns an Array of User objects.
+  # Returns promise for an Array of User objects.
   users: ->
     @robot.logger.warning '@users() is going to be deprecated in 3.0.0 use @robot.brain.users()'
     @robot.brain.users()
 
   # Public: Get a User object given a unique identifier.
   #
-  # Returns a User instance of the specified user.
+  # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
     @robot.logger.warning '@userForId() is going to be deprecated in 3.0.0 use @robot.brain.userForId()'
     @robot.brain.userForId id, options
 
   # Public: Get a User object given a name.
   #
-  # Returns a User instance for the user with the specified name.
+  # Returns promise for a User instance for the user with the specified name.
   userForName: (name) ->
     @robot.logger.warning '@userForName() is going to be deprecated in 3.0.0 use @robot.brain.userForName()'
     @robot.brain.userForName name
@@ -90,7 +94,7 @@ class Adapter extends EventEmitter
   # means 'starts with', but this could be extended to match initials,
   # nicknames, etc.
   #
-  # Returns an Array of User instances matching the fuzzy name.
+  # Returns promise for an Array of User instances matching the fuzzy name.
   usersForRawFuzzyName: (fuzzyName) ->
     @robot.logger.warning '@userForRawFuzzyName() is going to be deprecated in 3.0.0 use @robot.brain.userForRawFuzzyName()'
     @robot.brain.usersForRawFuzzyName fuzzyName
@@ -99,7 +103,7 @@ class Adapter extends EventEmitter
   # just that user. Otherwise, returns an array of all users for which
   # fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
   #
-  # Returns an Array of User instances matching the fuzzy name.
+  # Returns promise for an Array of User instances matching the fuzzy name.
   usersForFuzzyName: (fuzzyName) ->
     @robot.logger.warning '@userForFuzzyName() is going to be deprecated in 3.0.0 use @robot.brain.userForFuzzyName()'
     @robot.brain.usersForFuzzyName fuzzyName
