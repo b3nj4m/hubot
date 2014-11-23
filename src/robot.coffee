@@ -228,7 +228,8 @@ class Robot
 
     if require.extensions[ext]
       try
-        require(full) @
+        #TODO pass a clone of robot with @brain replaced with brain segment?
+        require(full) @, @brain.segment(full)
         @parseHelp Path.join(path, file)
       catch error
         @logger.error "Unable to load #{full}: #{error.stack}"
@@ -271,9 +272,10 @@ class Robot
       try
         if packages instanceof Array
           for pkg in packages
-            require(pkg) @
+            require(pkg) @, @brain.segment(pkg)
         else
           for pkg, scripts of packages
+            #TODO brain segment for each script?
             require(pkg) @, scripts
       catch err
         @logger.error "Error loading scripts from npm package - #{err.stack}"

@@ -1,4 +1,5 @@
 Brain = require '../brain'
+BrainSegment = require '../brain-segment'
 Url = require "url"
 Redis = require "redis"
 Q = require "q"
@@ -61,17 +62,6 @@ class RedisBrain extends Brain
     @client.quit()
 
   segment: (prefix) ->
-    new RedisBrainSegment @, prefix
-
-class RedisBrainSegment extends Brain
-  constructor: (@brain, @prefix = '') ->
-    @get = @get.bind(@, prefix)
-    @set = @set.bind(@, prefix)
-
-  get: (prefix, key) ->
-    @brain.get(prefix, key)
-
-  set: (prefix, key, value) ->
-    @brain.set(prefix, key, value)
+    new BrainSegment @, prefix
 
 module.exports = RedisBrain
