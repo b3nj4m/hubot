@@ -278,7 +278,7 @@ class Robot
           for pkg, scripts of packages
             #brain segment for each script appropriate?
             require(pkg) @, scripts, scripts.map (script) =>
-              @brain.segment(script)
+              @brain.segment("#{pkg}:#{script}")
       catch err
         @logger.error "Error loading scripts from npm package - #{err.stack}"
         process.exit(1)
