@@ -245,7 +245,7 @@ class Robot
       @logger.debug "Loading scripts from #{path}"
 
       if Fs.existsSync(path)
-        return Q.all Fs.readdirSync(path).sort().map (file) =>
+        Fs.readdirSync(path).sort().forEach (file) =>
           @loadFile path, file
 
   # Public: Load scripts specfied in the `hubot-scripts.json` file.
@@ -258,7 +258,7 @@ class Robot
     @ready.then =>
       @logger.debug "Loading hubot-scripts from #{path}"
 
-      Q.all scripts.map (script) =>
+      scripts.forEach (script) =>
         @loadFile path, script
 
   # Public: Load scripts from packages specfied in the
