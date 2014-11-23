@@ -3,6 +3,7 @@
 User = require './user'
 BrainSegment = require './brain-segment'
 Q = require 'q'
+_ = require 'lodash'
 
 class Brain extends EventEmitter
   # Represents somewhat persistent storage for the robot. Extend this.
@@ -21,13 +22,13 @@ class Brain extends EventEmitter
   #
   # Returns promise
   set: (key, value) ->
-    if key is Object(key)
+    if value is undefined
       pair = key
     else
       pair = {}
       pair[key] = value
 
-    extend @data._private, pair
+    _.extend @data._private, _.mapValues(pair, @serialize)
     Q(@)
 
   # Public: Get value by key from the private namespace in @data
@@ -35,7 +36,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   get: (key) ->
-    Q(@data._private[key] ? null)
+    Q(@deserialize(@data._private[key] ? null))
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists
@@ -92,24 +93,39 @@ class Brain extends EventEmitter
 
     Q(@)
 
+  # Public: Perform any necessary pre-set serialization on a value
+  #
+  # Returns serialized value
+  serialize: (value) ->
+    value
+
+  # Public: Perform any necessary post-get deserialization on a value
+  #
+  # Returns deserialized value
+  deserialize: (value) ->
+    value
+
   # Public: Get an Array of User objects stored in the brain.
   #
   # Returns promise for an Array of User objects.
   users: ->
     Q(@data.users)
 
-  # Public: Get a User object given a unique identifier.
+  # Public: Add a user to the data-store
+  #
+  # Returns promise for user
+  addUser: (user) ->
+    @data.users[user.id] = user
+    Q(user)
+
+  # Public: Get or create a User object given a unique identifier.
   #
   # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
     user = @data.users[id]
-    unless user
-      user = new User id, options
-      @data.users[id] = user
 
-    if options and options.room and (!user.room or user.room isnt options.room)
-      user = new User id, options
-      @data.users[id] = user
+    if !user or (options and options.room and (user.room isnt options.room))
+      return @addUser(new User(id, options))
 
     Q(user)
 
@@ -149,18 +165,10 @@ class Brain extends EventEmitter
 
     Q(matchedUsers)
 
-  # Public: Return a brain segment bound to the given prefix.
+  # Public: Return a brain segment bound to the given key-prefix.
   #
   # Returns BrainSegment
-  segment: (prefix) ->
-    new BrainSegment @, prefix
-
-# Private: Extend obj with objects passed as additional args.
-#
-# Returns the original object with updated changes.
-extend = (obj, sources...) ->
-  for source in sources
-    obj[key] = value for own key, value of source
-  obj
+  segment: (segment) ->
+    new BrainSegment @, segment
 
 module.exports = Brain

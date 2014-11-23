@@ -1,5 +1,12 @@
 class BrainSegment
-  constructor: (@brain, @prefix = '') ->
-    @get = @brain.get.bind(@brain, prefix)
-    @set = @brain.set.bind(@brain, prefix)
+  constructor: (@brain, @segment = uniqueId()) ->
+    @get = (key) ->
+      @brain.get("#{segment}:#{key}")
+    @set = (key, value) ->
+      @brain.set("#{segment}:#{key}", value)
 
+id = 0
+uniqueId = ->
+  id++
+
+module.exports = BrainSegment

@@ -1,11 +1,12 @@
 Brain = require '../brain'
-BrainSegment = require '../brain-segment'
 Url = require "url"
 Redis = require "redis"
 Q = require "q"
+_ = require "lodash"
+msgpack = require "msgpack"
 
 class RedisBrain extends Brain
-  constructor: (robot) ->
+  constructor: (robot, @useMsgpack = true) ->
     super(robot)
 
     redisUrl = if process.env.REDISTOGO_URL?
@@ -54,13 +55,105 @@ class RedisBrain extends Brain
 
     @ready = Q.all [@connected, @authed]
 
-  get: (prefix, key) ->
-    @ready.then(Q.ninvoke(@client, "get", "#{key}:#{prefix}:#{@prefix}:storage"))
+  key: (key) ->
+    "#{@prefix}:#{key}:storage"
 
-  set: (prefix, key, value) ->
-    @ready.then(Q.ninvoke(@client, "set", "#{key}:#{prefix}:#{@prefix}:storage", value))
+  get: (key) ->
+    @ready.then(Q.ninvoke(@client, "get", @key(key)).then(@deserialize))
+
+  set: (key, value) ->
+    @ready.then(Q.ninvoke(@client, "set", @key(key), @serialize(value)))
 
   close: ->
     @client.quit()
+
+  # Public: Perform any necessary pre-set serialization on a value
+  #
+  # Returns serialized value
+  serialize: (value) ->
+    if @useMsgpack
+      return msgpack.pack(value)
+
+    JSON.stringify(value)
+
+  # Public: Perform any necessary post-get deserialization on a value
+  #
+  # Returns deserialized value
+  deserialize: (value) ->
+    if @useMsgpack
+      return msgpack.unpack(new Buffer(value))
+
+    JSON.parse(value)
+
+  # Public: Perform any necessary pre-set serialization on a user
+  #
+  # Returns serialized user
+  serializeUser: (user) ->
+    @serialize user
+
+  # Public: Perform any necessary post-get deserializtion on a user
+  #
+  # Returns a User
+  deserializeUser: (obj) ->
+    obj = @deserialize obj
+    new User obj.id, obj
+
+  # Public: Get an Array of User objects stored in the brain.
+  #
+  # Returns promise for an Array of User objects.
+  users: ->
+    Q.ninvoke(@client, 'hgetall', @key('users')).then (users) =>
+      _.mapValues users, @deserializeUser
+
+  # Public: Add a user to the data-store
+  #
+  # Returns promise for user
+  addUser: (user) ->
+    Q.ninvoke(@client, 'hmset', @key('users'), user.id, @serializeUser(user)).then -> user
+
+  # Public: Get or create a User object given a unique identifier.
+  #
+  # Returns promise for a User instance of the specified user.
+  userForId: (id, options) ->
+    Q.ninvoke(@client, 'hget', @key('users'), id).then (user) =>
+      if !user or (options and options.room and (user.room isnt options.room))
+        return @addUser(new User(id, options))
+
+  # Public: Get a User object given a name.
+  #
+  # Returns promise for a User instance for the user with the specified name.
+  userForName: (name) ->
+    name = name.toLowerCase()
+
+    @users.then (users) ->
+      _.find users, (user) ->
+        user.name and user.name.toString().toLowerCase() is name
+
+  # Public: Get all users whose names match fuzzyName. Currently, match
+  # means 'starts with', but this could be extended to match initials,
+  # nicknames, etc.
+  #
+  # Returns promise an Array of User instances matching the fuzzy name.
+  usersForRawFuzzyName: (fuzzyName) ->
+    fuzzyName = fuzzyName.toLowerCase()
+
+    @users.then (users) ->
+      _.find users, (user) ->
+        user.name and user.name.toString().toLowerCase().indexOf(fuzzyName) is 0
+
+  # Public: If fuzzyName is an exact match for a user, returns an array with
+  # just that user. Otherwise, returns an array of all users for which
+  # fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
+  #
+  # Returns promise an Array of User instances matching the fuzzy name.
+  usersForFuzzyName: (fuzzyName) ->
+    fuzzyName = fuzzyName.toLowerCase()
+
+    @usersForRawFuzzyName(fuzzyName).then (matchedUsers) ->
+      exactMatch = _.find matchedUsers, (user) ->
+        user.name.toLowerCase() is fuzzyName
+
+      exactMatch or matchedUsers
+
 
 module.exports = RedisBrain
