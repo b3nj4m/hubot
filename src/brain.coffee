@@ -1,6 +1,7 @@
 {EventEmitter} = require 'events'
 
 User = require './user'
+BrainSegment = require './brain-segment'
 Q = require 'q'
 
 class Brain extends EventEmitter
@@ -147,6 +148,12 @@ class Brain extends EventEmitter
       return [user] if user.name.toLowerCase() is lowerFuzzyName
 
     Q(matchedUsers)
+
+  # Public: Return a brain segment bound to the given prefix.
+  #
+  # Returns BrainSegment
+  segment: (prefix) ->
+    new BrainSegment @, prefix
 
 # Private: Extend obj with objects passed as additional args.
 #

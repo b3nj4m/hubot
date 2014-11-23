@@ -6,6 +6,8 @@ Q = require "q"
 
 class RedisBrain extends Brain
   constructor: (robot) ->
+    super(robot)
+
     redisUrl = if process.env.REDISTOGO_URL?
                  redisUrlEnv = "REDISTOGO_URL"
                  process.env.REDISTOGO_URL
@@ -60,8 +62,5 @@ class RedisBrain extends Brain
 
   close: ->
     @client.quit()
-
-  segment: (prefix) ->
-    new BrainSegment @, prefix
 
 module.exports = RedisBrain
