@@ -1,13 +1,16 @@
-class BrainSegment
-  constructor: (@brain, @segment = uniqueId()) ->
-    #TODO user methods
-    @get = (key) ->
-      @brain.get("#{segment}:#{key}")
-    @set = (key, value) ->
-      @brain.set("#{segment}:#{key}", value)
+_ = require 'lodash'
 
-id = 0
-uniqueId = ->
-  id++
+class BrainSegment
+  constructor: (brain, @segment = _.uniqueId()) ->
+    segment = ->
+    segment.prototype = brain
+    obj = new segment()
+
+    obj.get = (key) ->
+      brain.get("#{segment}:#{key}")
+    obj.set = (key, value) ->
+      brain.set("#{segment}:#{key}", value)
+
+    return obj
 
 module.exports = BrainSegment

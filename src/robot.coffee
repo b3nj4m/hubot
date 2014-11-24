@@ -6,6 +6,7 @@ HttpClient     = require 'scoped-http-client'
 {EventEmitter} = require 'events'
 
 User = require './user'
+RobotSegment = require './robot-segment'
 Response = require './response'
 {Listener,TextListener} = require './listener'
 {EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
@@ -228,8 +229,7 @@ class Robot
 
     if require.extensions[ext]
       try
-        #TODO pass a clone of robot with @brain replaced with brain segment?
-        require(full) @, @brain.segment(full)
+        require(full) @segment(full)
         @parseHelp Path.join(path, file)
       catch error
         @logger.error "Unable to load #{full}: #{error.stack}"
@@ -273,12 +273,11 @@ class Robot
       try
         if packages instanceof Array
           for pkg in packages
-            require(pkg) @, @brain.segment(pkg)
+            require(pkg) @segment(pkg)
         else
           for pkg, scripts of packages
-            #brain segment for each script appropriate?
-            require(pkg) @, scripts, scripts.map (script) =>
-              @brain.segment("#{pkg}:#{script}")
+            #TODO brain segment for each script appropriate?
+            require(pkg) @segment("#{pkg}"), scripts
       catch err
         @logger.error "Error loading scripts from npm package - #{err.stack}"
         process.exit(1)
@@ -528,5 +527,11 @@ class Robot
   http: (url) ->
     HttpClient.create(url)
       .header('User-Agent', "Hubot/#{@version}")
+
+  # Public return a robot with a segmented brain for use in scripts
+  #
+  # Returns RobotSegment
+  segment: (segment) ->
+    new RobotSegment @, segment
 
 module.exports = Robot

@@ -163,5 +163,4 @@ class RedisBrain extends Brain
 
       exactMatch or matchedUsers
 
-
 module.exports = RedisBrain
