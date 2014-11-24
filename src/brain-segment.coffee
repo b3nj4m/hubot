@@ -1,5 +1,6 @@
 class BrainSegment
   constructor: (@brain, @segment = uniqueId()) ->
+    #TODO user methods
     @get = (key) ->
       @brain.get("#{segment}:#{key}")
     @set = (key, value) ->

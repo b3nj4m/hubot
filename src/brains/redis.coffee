@@ -2,12 +2,13 @@ Brain = require '../brain'
 Url = require "url"
 Redis = require "redis"
 Q = require "q"
+User = require '../user'
 _ = require "lodash"
 msgpack = require "msgpack"
 
 class RedisBrain extends Brain
-  constructor: (robot, @useMsgpack = true) ->
-    super(robot)
+  constructor: (@robot, @useMsgpack = true) ->
+    super(@robot)
 
     redisUrl = if process.env.REDISTOGO_URL?
                  redisUrlEnv = "REDISTOGO_URL"
@@ -25,9 +26,9 @@ class RedisBrain extends Brain
                  'redis://localhost:6379'
 
     if redisUrlEnv?
-      robot.logger.info "Discovered redis from #{redisUrlEnv} environment variable"
+      @robot.logger.info "Discovered redis from #{redisUrlEnv} environment variable"
     else
-      robot.logger.info "Using default redis on localhost:6379"
+      @robot.logger.info "Using default redis on localhost:6379"
 
     @info   = Url.parse  redisUrl, true
     @client = Redis.createClient(@info.port, @info.hostname)
@@ -39,17 +40,17 @@ class RedisBrain extends Brain
     @client.on "connect", connectedDefer.resolve.bind(connectedDefer)
 
     @connected.then ->
-      robot.logger.info "Successfully connected to Redis"
+      @robot.logger.info "Successfully connected to Redis"
     @connected.fail (err) ->
-      robot.logger.error "Failed to connect to Redis: " + err
+      @robot.logger.error "Failed to connect to Redis: " + err
 
     if @info.auth
       @authed = Q.ninvoke @client, "auth", @info.auth.split(":")[1]
 
       @authed.then ->
-        robot.logger.info "Successfully authenticated to Redis"
+        @robot.logger.info "Successfully authenticated to Redis"
       @authed.fail ->
-        robot.logger.error "Failed to authenticate to Redis"
+        @robot.logger.error "Failed to authenticate to Redis"
     else
       @authed = Q()
 
@@ -72,7 +73,7 @@ class RedisBrain extends Brain
   # Returns serialized value
   serialize: (value) ->
     if @useMsgpack
-      return msgpack.pack(value)
+      return msgpack.pack(value).toString()
 
     JSON.stringify(value)
 
@@ -96,26 +97,33 @@ class RedisBrain extends Brain
   # Returns a User
   deserializeUser: (obj) ->
     obj = @deserialize obj
-    new User obj.id, obj
+
+    if obj and obj.id
+      return new User obj.id, obj
+
+    null
 
   # Public: Get an Array of User objects stored in the brain.
   #
   # Returns promise for an Array of User objects.
   users: ->
     Q.ninvoke(@client, 'hgetall', @key('users')).then (users) =>
-      _.mapValues users, @deserializeUser
+      _.mapValues users, @deserializeUser.bind(@)
 
   # Public: Add a user to the data-store
   #
   # Returns promise for user
   addUser: (user) ->
-    Q.ninvoke(@client, 'hmset', @key('users'), user.id, @serializeUser(user)).then -> user
+    Q.ninvoke(@client, 'hset', @key('users'), user.id, @serializeUser(user)).then -> user
 
   # Public: Get or create a User object given a unique identifier.
   #
   # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
     Q.ninvoke(@client, 'hget', @key('users'), id).then (user) =>
+      if user
+        user = @deserializeUser user
+
       if !user or (options and options.room and (user.room isnt options.room))
         return @addUser(new User(id, options))
 

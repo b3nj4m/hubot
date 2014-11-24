@@ -20,7 +20,6 @@ class Shell extends Adapter
     @send envelope, strings...
 
   run: ->
-    self = @
     stdin = process.openStdin()
     stdout = process.stdout
 
@@ -34,10 +33,10 @@ class Shell extends Adapter
     @repl.on 'line', (buffer) =>
       @repl.close() if buffer.toLowerCase() is 'exit'
       @repl.prompt()
-      user = @robot.brain.userForId '1', name: 'Shell', room: 'Shell'
-      @receive new TextMessage user, buffer, 'messageId'
+      @robot.brain.userForId('1', name: 'Shell', room: 'Shell').then (user) =>
+        @receive new TextMessage user, buffer, 'messageId'
 
-    self.emit 'connected'
+    @emit 'connected'
 
     @repl.setPrompt "#{@robot.name}> "
     @repl.prompt()
