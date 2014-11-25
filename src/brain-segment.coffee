@@ -1,15 +1,13 @@
 _ = require 'lodash'
 
 class BrainSegment
-  constructor: (brain, @segment = _.uniqueId()) ->
-    segment = ->
-    segment.prototype = brain
-    obj = new segment()
+  constructor: (brain, segmentName = _.uniqueId()) ->
+    obj = Object.create(brain)
 
     obj.get = (key) ->
-      brain.get("#{segment}:#{key}")
+      brain.get("#{segmentName}:#{key}")
     obj.set = (key, value) ->
-      brain.set("#{segment}:#{key}", value)
+      brain.set("#{segmentName}:#{key}", value)
 
     return obj
 

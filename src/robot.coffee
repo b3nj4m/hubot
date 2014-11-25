@@ -78,6 +78,7 @@ class Robot
     @on 'error', (err, msg) =>
       @invokeErrorHandlers(err, msg)
     process.on 'uncaughtException', (err) =>
+      @logger.error err.stack
       @emit 'error', err
 
 
@@ -112,6 +113,7 @@ class Robot
     pattern = re.join('/')
     name = @name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
+    #TODO use separate regex for identifying message to hubot, then check command regexen (will enable anchors to be used in command regex)
     if @alias
       alias = @alias.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
       newRegex = new RegExp(
@@ -207,6 +209,7 @@ class Robot
   receive: (message) ->
     results = []
     for listener in @listeners
+      @logger.debug listener
       try
         results.push listener.call(message)
         break if message.done
@@ -528,10 +531,7 @@ class Robot
     HttpClient.create(url)
       .header('User-Agent', "Hubot/#{@version}")
 
-  # Public return a robot with a segmented brain for use in scripts
-  #
-  # Returns RobotSegment
-  segment: (segment) ->
-    new RobotSegment @, segment
+  segment: (segmentName) ->
+    new RobotSegment @, segmentName
 
 module.exports = Robot

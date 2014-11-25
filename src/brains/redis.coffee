@@ -31,7 +31,7 @@ class RedisBrain extends Brain
       @robot.logger.info "Using default redis on localhost:6379"
 
     @info   = Url.parse  redisUrl, true
-    @client = Redis.createClient(@info.port, @info.hostname)
+    @client = Redis.createClient(@info.port, @info.hostname, return_buffers: true)
     @prefix = @info.path?.replace('/', '') or 'hubot'
 
     connectedDefer = Q.defer()
@@ -57,13 +57,15 @@ class RedisBrain extends Brain
     @ready = Q.all [@connected, @authed]
 
   key: (key) ->
-    "#{@prefix}:#{key}:storage"
+    "#{@prefix}:#{key}"
 
   get: (key) ->
-    @ready.then(Q.ninvoke(@client, "get", @key(key)).then(@deserialize))
+    @ready.then =>
+      Q.ninvoke(@client, "get", @key(key)).then(@deserialize.bind(@))
 
   set: (key, value) ->
-    @ready.then(Q.ninvoke(@client, "set", @key(key), @serialize(value)))
+    @ready.then =>
+      Q.ninvoke(@client, "set", @key(key), @serialize(value))
 
   close: ->
     @client.quit()
@@ -73,7 +75,7 @@ class RedisBrain extends Brain
   # Returns serialized value
   serialize: (value) ->
     if @useMsgpack
-      return msgpack.pack(value).toString()
+      return msgpack.pack(value)
 
     JSON.stringify(value)
 
@@ -82,7 +84,7 @@ class RedisBrain extends Brain
   # Returns deserialized value
   deserialize: (value) ->
     if @useMsgpack
-      return msgpack.unpack(new Buffer(value))
+      return msgpack.unpack(value)
 
     JSON.parse(value)
 
@@ -107,25 +109,30 @@ class RedisBrain extends Brain
   #
   # Returns promise for an Array of User objects.
   users: ->
-    Q.ninvoke(@client, 'hgetall', @key('users')).then (users) =>
-      _.mapValues users, @deserializeUser.bind(@)
+    @ready.then =>
+      Q.ninvoke(@client, 'hgetall', @key('users')).then (users) =>
+        _.mapValues users, @deserializeUser.bind(@)
 
   # Public: Add a user to the data-store
   #
   # Returns promise for user
   addUser: (user) ->
-    Q.ninvoke(@client, 'hset', @key('users'), user.id, @serializeUser(user)).then -> user
+    @ready.then =>
+      Q.ninvoke(@client, 'hset', @key('users'), user.id, @serializeUser(user)).then -> user
 
   # Public: Get or create a User object given a unique identifier.
   #
   # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
-    Q.ninvoke(@client, 'hget', @key('users'), id).then (user) =>
-      if user
-        user = @deserializeUser user
+    @ready.then =>
+      Q.ninvoke(@client, 'hget', @key('users'), id).then (user) =>
+        if user
+          user = @deserializeUser user
 
-      if !user or (options and options.room and (user.room isnt options.room))
-        return @addUser(new User(id, options))
+        if !user or (options and options.room and (user.room isnt options.room))
+          return @addUser(new User(id, options))
+
+        return user
 
   # Public: Get a User object given a name.
   #
