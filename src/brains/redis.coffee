@@ -67,6 +67,36 @@ class RedisBrain extends Brain
     @ready.then =>
       Q.ninvoke(@client, "set", @key(key), @serialize(value))
 
+  # Public: Get all the keys for the given hash table name
+  #
+  # Returns array.
+  hkeys: (table) ->
+    Q.ninvoke(@client, 'hkeys', @key(table))
+
+  # Public: Get all the values for the given hash table name
+  #
+  # Returns array.
+  hvals: (table) ->
+    Q.ninvoke(@client, 'hvals', @key(table))
+
+  # Public: Set a value in the specified hash table
+  #
+  # Returns the value.
+  hset: (table, key, value) ->
+    Q.ninvoke(@client, 'hset', @key(table), key, value)
+
+  # Public: Get a value from the specified hash table.
+  #
+  # Returns: the value.
+  hget: (table, key) ->
+    Q.ninvoke(@client, 'hget', @key(table), key)
+
+  # Public: Get the whole hash table as an object.
+  #
+  # Returns: object.
+  hgetall: (table) ->
+    Q.ninvoke(@client, 'hgetall', @key(table))
+
   close: ->
     @client.quit()
 

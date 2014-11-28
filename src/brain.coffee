@@ -11,8 +11,9 @@ class Brain extends EventEmitter
   # Returns a new Brain with no external storage.
   constructor: (robot) ->
     @data =
-      users:    { }
-      _private: { }
+      users: {}
+      _private: {}
+      _hprivate: {}
 
     @autoSave = true
     @ready = Q(@)
@@ -37,6 +38,37 @@ class Brain extends EventEmitter
   # Returns promise
   get: (key) ->
     Q(@deserialize(@data._private[key] ? null))
+
+  # Public: Get all the keys for the given hash table name
+  #
+  # Returns array.
+  hkeys: (table) ->
+    _.keys(@_hprivate[table] or {})
+
+  # Public: Get all the values for the given hash table name
+  #
+  # Returns array.
+  hvals: (table) ->
+    _.values(@_hprivate[table] or {})
+
+  # Public: Set a value in the specified hash table
+  #
+  # Returns the value.
+  hset: (table, key, value) ->
+    @_hprivate[table] = @_hprivate[table] or {}
+    @_hprivate[table][key] = value
+
+  # Public: Get a value from the specified hash table.
+  #
+  # Returns: the value.
+  hget: (table, key) ->
+    @_hprivate[table][key]
+
+  # Public: Get the whole hash table as an object.
+  #
+  # Returns: object.
+  hgetall: (table) ->
+    _.clone @_hprivate
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists
