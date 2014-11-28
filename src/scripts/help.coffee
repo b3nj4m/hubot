@@ -54,9 +54,6 @@ helpContents = (name, commands) ->
 
 module.exports = (robot) ->
   robot.respond /help\s*(.*)?$/i, (msg) ->
-    robot.brain.set('beans', toppings: ['cheese', 'salsa', 'lettuce']).then ->
-      robot.brain.get('beans').then(robot.logger.debug.bind(robot.logger))
-
     cmds = robot.helpCommands()
     filter = msg.match[1]
 

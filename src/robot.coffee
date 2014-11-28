@@ -209,7 +209,6 @@ class Robot
   receive: (message) ->
     results = []
     for listener in @listeners
-      @logger.debug listener
       try
         results.push listener.call(message)
         break if message.done
