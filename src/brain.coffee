@@ -39,6 +39,13 @@ class Brain extends EventEmitter
   get: (key) ->
     Q(@deserialize(@data._private[key] ? null))
 
+  # Public: increment the value by num atomically
+  #
+  # Returns promise
+  incrby: (key, num) ->
+    @get(key).then (val) =>
+      @set key, val + num
+
   # Public: Get all the keys for the given hash table name
   #
   # Returns array.
@@ -69,6 +76,13 @@ class Brain extends EventEmitter
   # Returns: object.
   hgetall: (table) ->
     _.clone @_hprivate
+
+  # Public: increment the hash value by num atomically
+  #
+  # Returns promise
+  hincrby: (table, key, num) ->
+    @hget(table, key).then (val) =>
+      @set table, key, val + num
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists

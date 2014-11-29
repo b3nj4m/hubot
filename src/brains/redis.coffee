@@ -67,6 +67,12 @@ class RedisBrain extends Brain
     @ready.then =>
       Q.ninvoke(@client, "set", @key(key), @serialize(value))
 
+  # Public: increment the value by num atomically
+  #
+  # Returns promise
+  incrby: (key, num) ->
+    Q.ninvoke(@client, 'incrby', @key(key), num)
+
   # Public: Get all the keys for the given hash table name
   #
   # Returns array.
@@ -96,6 +102,12 @@ class RedisBrain extends Brain
   # Returns: object.
   hgetall: (table) ->
     Q.ninvoke(@client, 'hgetall', @key(table))
+
+  # Public: increment the hash value by num atomically
+  #
+  # Returns promise
+  hincrby: (table, key, num) ->
+    Q.ninvoke(@client, 'hincrby', @key(table), key, num)
 
   close: ->
     @client.quit()
