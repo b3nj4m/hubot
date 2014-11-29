@@ -1,3 +1,4 @@
+_ = require 'lodash'
 Q              = require 'q'
 Fs             = require 'fs'
 Log            = require 'log'
@@ -9,7 +10,7 @@ User = require './user'
 RobotSegment = require './robot-segment'
 Response = require './response'
 {Listener,TextListener} = require './listener'
-{EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage} = require './message'
+{EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage,TextMessage} = require './message'
 
 HUBOT_DEFAULT_ADAPTERS = [
   'campfire'
@@ -48,12 +49,14 @@ class Robot
   # Returns nothing.
   constructor: (adapterPath, adapter, brainPath, brain, httpd, name = 'Hubot') ->
     @name      = name
+    @nameRegex = new RegExp "^\\s*#{name}:?\\s+", 'i'
     @events    = new EventEmitter
     @alias     = false
     @adapter   = null
     @Response  = Response
     @commands  = []
     @listeners = []
+    @respondListeners = []
     @logger    = new Log process.env.HUBOT_LOG_LEVEL or 'info'
     @pingIntervalId = null
 
@@ -101,32 +104,7 @@ class Robot
   #
   # Returns nothing.
   respond: (regex, callback) ->
-    re = regex.toString().split('/')
-    re.shift()
-    modifiers = re.pop()
-
-    if re[0] and re[0][0] is '^'
-      @logger.warning \
-        "Anchors don't work well with respond, perhaps you want to use 'hear'"
-      @logger.warning "The regex in question was #{regex.toString()}"
-
-    pattern = re.join('/')
-    name = @name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
-
-    #TODO use separate regex for identifying message to hubot, then check command regexen (will enable anchors to be used in command regex)
-    if @alias
-      alias = @alias.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
-      newRegex = new RegExp(
-        "^\\s*[@]?(?:#{alias}[:,]?|#{name}[:,]?)\\s*(?:#{pattern})"
-        modifiers
-      )
-    else
-      newRegex = new RegExp(
-        "^\\s*[@]?#{name}[:,]?\\s*(?:#{pattern})",
-        modifiers
-      )
-
-    @listeners.push new TextListener(@, newRegex, callback)
+    @respondListeners.push new TextListener(@, regex, callback)
 
   # Public: Adds a Listener that triggers when anyone enters the room.
   #
@@ -200,6 +178,17 @@ class Robot
       ((msg) -> msg.message = msg.message.message; callback msg)
     )
 
+  messageIsToMe: (message) ->
+    if @alias
+      @aliasRegex = new RegExp "^\\s*#{@alias}:?\\s+"
+    else
+      @aliasRegex = false
+
+    if @nameRegex.test message.text or (@aliasRegex and @aliasRegex.test message.text)
+      return true
+    
+    return false
+
   # Public: Passes the given message to any interested Listeners.
   #
   # message - A Message instance. Listeners can flag this message as 'done' to
@@ -207,16 +196,32 @@ class Robot
   #
   # Returns nothing.
   receive: (message) ->
-    results = []
+    matched = false
+
     for listener in @listeners
       try
-        results.push listener.call(message)
+        matched = listener.call(message) or matched
         break if message.done
       catch error
         @emit('error', error, new @Response(@, message, []))
 
-        false
-    if message not instanceof CatchAllMessage and results.indexOf(true) is -1
+    if @messageIsToMe message
+      #for respond listeners, chop off the hubot's name/alias
+      respondText = message.text.replace @nameRegex, ''
+
+      if @aliasRegex
+        respondText = respondText.replace @aliasRegex, ''
+
+      respondMessage = new TextMessage message.user, respondText, message.id
+
+      for listener in @respondListeners
+        try
+          matched = listener.call(respondMessage) or matched
+          break if respondMessage.done
+        catch error
+          @emit('error', error, new @Response(@, respondMessage, []))
+
+    if message not instanceof CatchAllMessage and not matched
       @receive new CatchAllMessage(message)
 
   # Public: Loads a file in path.

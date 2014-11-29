@@ -26,11 +26,11 @@ class Listener
   # Returns false or the result of queueing the response
   call: (message) ->
     if match = @matcher message
-      @robot.logger.debug \
-        "Message '#{message}' matched regex /#{inspect @regex}/" if @regex
+      @robot.logger.debug "Message '#{message}' matched regex /#{inspect @regex}/" if @regex
 
       @enqueue new @robot.Response(@robot, message, match)
     else
+      @robot.logger.debug "Message '#{message}' not matched regex /#{inspect @regex}/" if @regex
       false
 
   # Public: queue a response for processing
