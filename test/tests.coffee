@@ -15,7 +15,7 @@ Response      = require '../src/response'
 exports.helper = ->
   new Helper "#{__dirname}/scripts"
 
-# Training facility built for the Hubot scripts.  Starts up a web server to
+# Training facility built for the Brobbot scripts.  Starts up a web server to
 # emulate backends (like google images) so we can test that the response
 # parsing code functions.
 exports.danger = (helper, cb) ->
@@ -67,7 +67,7 @@ class Danger extends Adapter
     else
       super text
 
-if not process.env.HUBOT_LIVE
+if not process.env.BROBBOT_LIVE
   class Helper.Response extends Response
     # This changes ever HTTP request to hit the danger server above
     http: (url) ->

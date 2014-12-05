@@ -1,6 +1,6 @@
-# Hubot
+# Brobbot
 
-Hubot is a chat bot, modeled after GitHub's Campfire bot, brobbot. He's pretty
+Brobbot is a chat bot, modeled after GitHub's Campfire bot, brobbot. He's pretty
 cool. He's extendable with
 [old community scripts](https://github.com/github/brobbot-scripts), or 
 [new community org](https://github.com/brobbot-scripts/) and your own custom
