@@ -1,7 +1,7 @@
-# Deploying Hubot to Heroku
+# Deploying Brobbot to Heroku
 
 If you've been following along with [Getting Started](../README.md), it's time to deploy so you can use it beyond just your local machine.
-[Heroku](http://www.heroku.com/) is an easy and supported way to deploy hubot.
+[Heroku](http://www.heroku.com/) is an easy and supported way to deploy brobbot.
 
 Install the [Heroku Toolbelt](https://toolbelt.heroku.com/) to start, then follow their 'Getting Started' instructions, including logging in the first time:
 
@@ -14,7 +14,7 @@ Install the [Heroku Toolbelt](https://toolbelt.heroku.com/) to start, then follo
     Generating new SSH public key.
     Uploading ssh public key /Users/you/.ssh/id_rsa.pub
 
-Inside your new hubot directory, make sure you've created a git repository, and that your work is committed:
+Inside your new brobbot directory, make sure you've created a git repository, and that your work is committed:
 
     % git init
     % git add .
@@ -28,22 +28,22 @@ Then create a Heroku application:
     Git remote heroku added
 
 Before you deploy the application, you'll need to configure some environment
-variables for hubot to use. The specific variables you'll need depends on which
+variables for brobbot to use. The specific variables you'll need depends on which
 [adapter](../adapters.md) and scripts you are using. For Campfire, with no other
 scripts, you'd need to set the following environment variables:
 
-    % heroku config:set HUBOT_CAMPFIRE_ACCOUNT=yourcampfireaccount
-    % heroku config:set HUBOT_CAMPFIRE_TOKEN=yourcampfiretoken
-    % heroku config:set HUBOT_CAMPFIRE_ROOMS=comma,separated,list,of,rooms,to,join
+    % heroku config:set BROBBOT_CAMPFIRE_ACCOUNT=yourcampfireaccount
+    % heroku config:set BROBBOT_CAMPFIRE_TOKEN=yourcampfiretoken
+    % heroku config:set BROBBOT_CAMPFIRE_ROOMS=comma,separated,list,of,rooms,to,join
 
-In addition, there is one special environment variable for Heroku. The default hubot
+In addition, there is one special environment variable for Heroku. The default brobbot
 [Procfile](https://devcenter.heroku.com/articles/procfile) marks the process as
 a 'web' process type, in order to support serving http requests (more on that
 in the [scripting docs](../scripting.md)). The downside of this is that dynos
 will [idle after an hour of inactivity](https://devcenter.heroku.com/articles/dynos#dyno-idling).
-That means your hubot would leave after an hour of idle web traffic, and only rejoin when it does get traffic. This is extremely
-inconvenient since most interaction is done through chat, and hubot has to be online and in the room to respond to messages. To get around this,
-there's a special environment variable to make hubot regularly ping itself over http. If
+That means your brobbot would leave after an hour of idle web traffic, and only rejoin when it does get traffic. This is extremely
+inconvenient since most interaction is done through chat, and brobbot has to be online and in the room to respond to messages. To get around this,
+there's a special environment variable to make brobbot regularly ping itself over http. If
 the app is deployed to http://rosemary-britches-123.herokuapp.com/, you'd
 configure:
 
@@ -60,7 +60,7 @@ at the logs to try to debug:
 
     % heroku logs
 
-If you make any changes to your hubot, just commit and push them as
+If you make any changes to your brobbot, just commit and push them as
 before:
 
     % git commit -am "Awesome scripts OMG"

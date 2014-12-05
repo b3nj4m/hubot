@@ -1,41 +1,41 @@
 # Scripting
 
-Hubot out of the box doesn't do too much, but it is an extensible, scriptable robot friend.
+Brobbot out of the box doesn't do too much, but it is an extensible, scriptable robot friend.
 
 ## Anatomy of script loading
 
 There are three main sources to load scripts from:
 
-* all scripts __bundled__ with your hubot installation under `scripts/` dir
-* __community scripts__ specified in `hubot-scripts.json` and shipped in the `hubot-scripts` npm package
+* all scripts __bundled__ with your brobbot installation under `scripts/` dir
+* __community scripts__ specified in `brobbot-scripts.json` and shipped in the `brobbot-scripts` npm package
 * scripts loaded from external __npm packages__ and specified in `external-scripts.json`
 
 ### Community Scripts
 
-To use community scripts, place the name of the script in the `hubot-scripts.json` file. For example:
+To use community scripts, place the name of the script in the `brobbot-scripts.json` file. For example:
 
 ```coffeescript
 ["redis-brain.coffee", "shipit.coffee", "whatis.coffee", "<new-script-name>.coffee"]
 ```
 
-(Please check the [script catalog](http://hubot-script-catalog.herokuapp.com) and the [hubot-scripts repo](https://github.com/github/hubot-scripts/tree/master/src/scripts) for scripts carefully crafted for you by lots of nice folks)
+(Please check the [script catalog](http://brobbot-script-catalog.herokuapp.com) and the [brobbot-scripts repo](https://github.com/github/brobbot-scripts/tree/master/src/scripts) for scripts carefully crafted for you by lots of nice folks)
 
 ### NPM Packages
 
-Another way is to install scripts via an npm package (you can check some of them [here](https://npmjs.org/search?q=hubot)).
+Another way is to install scripts via an npm package (you can check some of them [here](https://npmjs.org/search?q=brobbot)).
 
-To load those scripts to your hubot installation, you need to place them in the `external-scripts.json` file after adding the required npm packages to the `package.json` dependency section.
+To load those scripts to your brobbot installation, you need to place them in the `external-scripts.json` file after adding the required npm packages to the `package.json` dependency section.
 
-Here is an example of adding the [hubot-botriot](https://npmjs.org/package/hubot-botriot) npm package:
+Here is an example of adding the [brobbot-botriot](https://npmjs.org/package/brobbot-botriot) npm package:
 
 ```json
 {
  ...
 
   "dependencies": {
-    "hubot":         ">= 2.6.0 < 3.0.0",
-    "hubot-scripts": ">= 2.5.0 < 3.0.0",
-    "hubot-botriot": "",
+    "brobbot":         ">= 2.6.0 < 3.0.0",
+    "brobbot-scripts": ">= 2.5.0 < 3.0.0",
+    "brobbot-botriot": "",
   },
 
 ...
@@ -44,7 +44,7 @@ Here is an example of adding the [hubot-botriot](https://npmjs.org/package/hubot
 
 ### Bundled Scripts
 
-Last but not least, you can put your own scripts under the `scripts/` directory. All scripts placed there are automatically loaded and ready to use with your hubot.
+Last but not least, you can put your own scripts under the `scripts/` directory. All scripts placed there are automatically loaded and ready to use with your brobbot.
 
 You can also use this for customizing scripts from other sources. Just copy the *.coffee file into this directory and make whatever changes you'd like.
 
@@ -52,9 +52,9 @@ Instructions for writing your own scripts can be found below.
 
 ## Anatomy of a script
 
-When you created your hubot, the generator also created a `scripts` directory. If you peek around there, you will see some examples of scripts. For a script to be a script, it needs to:
+When you created your brobbot, the generator also created a `scripts` directory. If you peek around there, you will see some examples of scripts. For a script to be a script, it needs to:
 
-* live in a directory on the hubot script load path (`src/scripts` and `scripts` by default)
+* live in a directory on the brobbot script load path (`src/scripts` and `scripts` by default)
 * be a `.coffee` or `.js` file
 * export a function
 
@@ -69,7 +69,7 @@ The `robot` parameter is an instance of your robot friend. At this point, we can
 
 ## Hearing and responding
 
-Since this is a chat bot, the most common interactions are based on messages. Hubot can `hear` messages said in a room or `respond` to messages directly addressed at it. Both methods take a regular expression and a callback function as parameters. For example:
+Since this is a chat bot, the most common interactions are based on messages. Brobbot can `hear` messages said in a room or `respond` to messages directly addressed at it. Both methods take a regular expression and a callback function as parameters. For example:
 
 ```coffeescript
 module.exports = (robot) ->
@@ -142,7 +142,7 @@ If Dave says "HAL: open the pod bay doors", then `msg.match[0]` is "open the pod
 
 ## Making HTTP calls
 
-Hubot can make HTTP calls on your behalf to integrate & consume third party APIs. This can be through an instance of [node-scoped-http-client](https://github.com/technoweenie/node-scoped-http-client) available at `robot.http`. The simplest case looks like:
+Brobbot can make HTTP calls on your behalf to integrate & consume third party APIs. This can be through an instance of [node-scoped-http-client](https://github.com/technoweenie/node-scoped-http-client) available at `robot.http`. The simplest case looks like:
 
 
 ```coffeescript
@@ -255,7 +255,7 @@ For those times that there isn't an API, there's always the possibility of scree
 
 ## Random
 
-A common pattern is to hear or respond to commands, and send with a random funny image or line of text from an array of possibilities. It's annoying to do this in JavaScript and CoffeeScript out of the box, so Hubot includes a convenience method:
+A common pattern is to hear or respond to commands, and send with a random funny image or line of text from an array of possibilities. It's annoying to do this in JavaScript and CoffeeScript out of the box, so Brobbot includes a convenience method:
 
 ```coffeescript
 lulz = ['lol', 'rofl', 'lmao']
@@ -265,7 +265,7 @@ msg.send msg.random lulz
 
 ## Topic
 
-Hubot can react to a room's topic changing, assuming that the adapter supports it.
+Brobbot can react to a room's topic changing, assuming that the adapter supports it.
 
 ```coffeescript
 module.exports = (robot) ->
@@ -275,7 +275,7 @@ module.exports = (robot) ->
 
 ## Entering and leaving
 
-Hubot can see users entering and leaving, assuming that the adapter supports it.
+Brobbot can see users entering and leaving, assuming that the adapter supports it.
 
 ```coffeescript
 enterReplies = ['Hi', 'Target Acquired', 'Firing', 'Hello friend.', 'Gotcha', 'I see you']
@@ -290,22 +290,22 @@ module.exports = (robot) ->
 
 ## Environment variables
 
-Hubot can access the environment he's running in, just like any other node program, using [`process.env`](http://nodejs.org/api/process.html#process_process_env). This can be used to configure how scripts are run, with the convention being to use the `HUBOT_` prefix.
+Brobbot can access the environment he's running in, just like any other node program, using [`process.env`](http://nodejs.org/api/process.html#process_process_env). This can be used to configure how scripts are run, with the convention being to use the `BROBBOT_` prefix.
 
 ```coffeescript
-answer = process.env.HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
 
 module.exports = (robot) ->
   robot.respond /what is the answer to the ultimate question of life/, (msg) ->
     msg.send "#{answer}, but what is the question?"
 ```
 
-Take care to make sure the script can load if it's not defined, give the Hubot developer notes on how to define it, or default to something. It's up to the script writer to decide if that should be a fatal error (e.g. hubot exits), or not (make any script that relies on it to say it needs to be configured. When possible and when it makes sense to, having a script work without any other configuration is preferred.
+Take care to make sure the script can load if it's not defined, give the Brobbot developer notes on how to define it, or default to something. It's up to the script writer to decide if that should be a fatal error (e.g. brobbot exits), or not (make any script that relies on it to say it needs to be configured. When possible and when it makes sense to, having a script work without any other configuration is preferred.
 
 Here we can default to something:
 
 ```coffeescript
-answer = process.env.HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING or 42
+answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING or 42
 
 module.exports = (robot) ->
   robot.respond /what is the answer to the ultimate question of life/, (msg) ->
@@ -315,9 +315,9 @@ module.exports = (robot) ->
 Here we exit if it's not defined:
 
 ```coffeescript
-answer = process.env.HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
 unless answer?
-  console.log "Missing HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
+  console.log "Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
   process.exit(1)
 
 module.exports = (robot) ->
@@ -328,33 +328,33 @@ module.exports = (robot) ->
 And lastly, we update the `robot.respond` to check it:
 
 ```coffeescript
-answer = process.env.HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
 
 module.exports = (robot) ->
   robot.respond /what is the answer to the ultimate question of life/, (msg) ->
     unless answer?
-      msg.send "Missing HUBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
+      msg.send "Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
       return
     msg.send "#{answer}, but what is the question?"
 ```
 
 ## Dependencies
 
-Hubot uses [npm](https://github.com/isaacs/npm) to manage its dependencies. To additional packages, add them to `dependencies` in `package.json`. For example, to add lolimadeupthispackage 1.2.3, it'd look like:
+Brobbot uses [npm](https://github.com/isaacs/npm) to manage its dependencies. To additional packages, add them to `dependencies` in `package.json`. For example, to add lolimadeupthispackage 1.2.3, it'd look like:
 
 ```json
   "dependencies": {
-    "hubot":         "2.5.5",
-    "hubot-scripts": "2.4.6",
+    "brobbot":         "2.5.5",
+    "brobbot-scripts": "2.4.6",
     "lolimadeupthispackage": "1.2.3"
   },
 ```
 
-If you are using scripts from hubot-scripts, take note of the `Dependencies` documentation in the script to add. They are listed in a format that can be copy & pasted into `package.json`, just make sure to add commas as necessary to make it valid JSON.
+If you are using scripts from brobbot-scripts, take note of the `Dependencies` documentation in the script to add. They are listed in a format that can be copy & pasted into `package.json`, just make sure to add commas as necessary to make it valid JSON.
 
 # Timeouts and Intervals
 
-Hubot can run code later using JavaScript's built-in [setTimeout](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). It takes a callback method, and the amount of time to wait before calling it:
+Brobbot can run code later using JavaScript's built-in [setTimeout](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). It takes a callback method, and the amount of time to wait before calling it:
 
 ```coffeescript
 module.exports = (robot) ->
@@ -364,7 +364,7 @@ module.exports = (robot) ->
     , 60 * 1000
 ```
 
-Additionally, Hubot can run code on an interval using [setInterval](http://nodejs.org/api/timers.html#timers_setinterval_callback_delay_arg). It takes a callback method, and the amount of time to wait between calls:
+Additionally, Brobbot can run code on an interval using [setInterval](http://nodejs.org/api/timers.html#timers_setinterval_callback_delay_arg). It takes a callback method, and the amount of time to wait between calls:
 
 ```coffeescript
 module.exports = (robot) ->
@@ -402,14 +402,14 @@ module.exports = (robot) ->
 
 ## HTTP Listener
 
-Hubot includes support for the [express](http://expressjs.com/guide.html) web framework to serve up HTTP requests. It listens on the port specified by the `PORT` environment variable, and defaults to 8080. An instance of an express application is available at `robot.router`. It can be protected with username and password by specifying `EXPRESS_USER` and `EXPRESS_PASSWORD`. It can automatically serve static files by setting `EXPRESS_STATIC`.
+Brobbot includes support for the [express](http://expressjs.com/guide.html) web framework to serve up HTTP requests. It listens on the port specified by the `PORT` environment variable, and defaults to 8080. An instance of an express application is available at `robot.router`. It can be protected with username and password by specifying `EXPRESS_USER` and `EXPRESS_PASSWORD`. It can automatically serve static files by setting `EXPRESS_STATIC`.
 
 The most common use of this is for providing HTTP end points for services with webhooks to push to, and have those show up in chat.
 
 
 ```coffeescript
 module.exports = (robot) ->
-  robot.router.post '/hubot/chatsecrets/:room', (req, res) ->
+  robot.router.post '/brobbot/chatsecrets/:room', (req, res) ->
     room   = req.params.room
     data   = JSON.parse req.body.payload
     secret = data.secret
@@ -421,17 +421,17 @@ module.exports = (robot) ->
 
 ## Events
 
-Hubot can also respond to events which can be used to pass data between scripts. This is done by encapsulating node.js's [EventEmitter](http://nodejs.org/api/events.html#events_class_events_eventemitter) with `robot.emit` and `robot.on`.
+Brobbot can also respond to events which can be used to pass data between scripts. This is done by encapsulating node.js's [EventEmitter](http://nodejs.org/api/events.html#events_class_events_eventemitter) with `robot.emit` and `robot.on`.
 
 One use case for this would be to have one script for handling interactions with a service, and then emitting events as they come up. For example, we could have a script that receives data from a GitHub post-commit hook, make that emit commits as they come in, and then have another script act on those commits.
 
 ```coffeescript
 # src/scripts/github-commits.coffee
 module.exports = (robot) ->
-  robot.router.post "/hubot/gh-commits", (req, res) ->
+  robot.router.post "/brobbot/gh-commits", (req, res) ->
     robot.emit "commit", {
-        user    : {}, #hubot user object
-        repo    : 'https://github.com/github/hubot',
+        user    : {}, #brobbot user object
+        repo    : 'https://github.com/github/brobbot',
         hash  : '2e1951c089bd865839328592ff673d2f08153643'
     }
 ```
@@ -444,11 +444,11 @@ module.exports = (robot) ->
     #deploy code goes here
 ```
 
-If you provide an event, it's highly recommended to include a hubot user or room object in its data. This would allow for hubot to notify a user or room in chat.
+If you provide an event, it's highly recommended to include a brobbot user or room object in its data. This would allow for brobbot to notify a user or room in chat.
 
 ## Error Handling
 
-No code is perfect, and errors and exceptions are to be expected. Previously, an uncaught exceptions would crash your hubot instance. Hubot now includes an `uncaughtException` handler, which provides hooks for scripts to do something about exceptions.
+No code is perfect, and errors and exceptions are to be expected. Previously, an uncaught exceptions would crash your brobbot instance. Brobbot now includes an `uncaughtException` handler, which provides hooks for scripts to do something about exceptions.
 
 ```coffeescript
 # src/scripts/does-not-compute.coffee
@@ -467,7 +467,7 @@ Under the hood, there is an 'error' event emitted, with the error handlers consu
 Using previous examples:
 
 ```coffeescript
-  robot.router.post '/hubot/chatsecrets/:room', (req, res) ->
+  robot.router.post '/brobbot/chatsecrets/:room', (req, res) ->
     room = req.params.room
     data = null
     try
@@ -492,7 +492,7 @@ For the second example, it's worth thinking about what messages the user would s
 
 ## Documenting Scripts
 
-Hubot scripts can be documented with comments at the top of their file, for example:
+Brobbot scripts can be documented with comments at the top of their file, for example:
 
 ```coffeescript
 # Description:
@@ -505,7 +505,7 @@ Hubot scripts can be documented with comments at the top of their file, for exam
 #   LIST_OF_ENV_VARS_TO_SET
 #
 # Commands:
-#   hubot <trigger> - <what the respond trigger does>
+#   brobbot <trigger> - <what the respond trigger does>
 #   <trigger> - <what the hear trigger does>
 #
 # Notes:
@@ -515,22 +515,22 @@ Hubot scripts can be documented with comments at the top of their file, for exam
 #   <github username of the original script author>
 ```
 
-The most important and user facing of these is `Commands`. At load time, Hubot looks at the `Commands` section of each scripts, and build a list of all commands. The included `help.coffee` lets a user ask for help across all commands, or with a search. Therefore, documenting the commands make them a lot more discoverable by users.
+The most important and user facing of these is `Commands`. At load time, Brobbot looks at the `Commands` section of each scripts, and build a list of all commands. The included `help.coffee` lets a user ask for help across all commands, or with a search. Therefore, documenting the commands make them a lot more discoverable by users.
 
 When documenting commands, here are some best practices:
 
 * Stay on one line. Help commands get sorted, so would insert the second line at an unexpected location, where it probably won't make sense.
-* Refer to the Hubot as hubot, even if your hubot is named something else. It will automatically be replaced with the correct name. This makes it easier to share scripts without having to update docs.
-* For `robot.respond` documentation, always prefix with `hubot`. Hubot will automatically replace this with your robot's name, or the robot's alias if it has one
+* Refer to the Brobbot as brobbot, even if your brobbot is named something else. It will automatically be replaced with the correct name. This makes it easier to share scripts without having to update docs.
+* For `robot.respond` documentation, always prefix with `brobbot`. Brobbot will automatically replace this with your robot's name, or the robot's alias if it has one
 * Check out how man pages document themselves. In particular, brackets indicate optional parts, '...' for any number of arguments, etc.
 
-The other sections are more relevant to developers of the bot, particularly dependencies, configuration variables, and notes. All contributions to [hubot-scripts](https://github.com/github/hubot-scripts) should include all these sections that are related to getting up and running with the script.
+The other sections are more relevant to developers of the bot, particularly dependencies, configuration variables, and notes. All contributions to [brobbot-scripts](https://github.com/github/brobbot-scripts) should include all these sections that are related to getting up and running with the script.
 
 
 
 ## Persistence
 
-Hubot has an in-memory key-value store exposed as `robot.brain` that can be
+Brobbot has an in-memory key-value store exposed as `robot.brain` that can be
 used to store and retrieve data by scripts.
 
 ```coffeescript
@@ -576,11 +576,11 @@ Scripts are loaded from the `scripts/` directory. They are loaded in alphabetica
 
 ## Creating A Script Package
 
-Creating a script package for hubot is very simple. Start by creating a normal
+Creating a script package for brobbot is very simple. Start by creating a normal
 `npm` package. Make sure you add a main file for the entry point (e.g.
 `index.js` or `index.coffee`).
 
-In this entry point file you're going to have to export a function that hubot
+In this entry point file you're going to have to export a function that brobbot
 will use to load the scripts in your package. Below is a simple example for
 loading each script in a `./scripts` directory in your package.
 

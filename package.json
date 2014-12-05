@@ -1,10 +1,10 @@
 {
-  "name": "hubot",
+  "name": "brobbot",
   "version": "2.9.3",
-  "author": "hubot",
+  "author": "brobbot",
   "keywords": [
     "github",
-    "hubot",
+    "brobbot",
     "campfire",
     "bot"
   ],
@@ -12,12 +12,12 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://raw.github.com/github/hubot/master/LICENSE"
+      "url": "https://raw.github.com/github/brobbot/master/LICENSE"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/github/hubot.git"
+    "url": "https://github.com/github/brobbot.git"
   },
   "dependencies": {
     "coffee-script": "1.6.3",
@@ -34,6 +34,6 @@
   },
   "main": "./index",
   "bin": {
-    "hubot": "./bin/hubot"
+    "brobbot": "./bin/brobbot"
   }
 }

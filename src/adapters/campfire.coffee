@@ -47,9 +47,9 @@ class Campfire extends Adapter
     self = @
 
     options =
-      token:   process.env.HUBOT_CAMPFIRE_TOKEN
-      rooms:   process.env.HUBOT_CAMPFIRE_ROOMS
-      account: process.env.HUBOT_CAMPFIRE_ACCOUNT
+      token:   process.env.BROBBOT_CAMPFIRE_TOKEN
+      rooms:   process.env.BROBBOT_CAMPFIRE_ROOMS
+      account: process.env.BROBBOT_CAMPFIRE_ACCOUNT
 
     bot = new CampfireStreaming(options, @robot)
 
@@ -182,7 +182,7 @@ class CampfireStreaming extends EventEmitter
       headers =
         "Host"          : "streaming.campfirenow.com"
         "Authorization" : self.authorization
-        "User-Agent"    : "Hubot/#{@robot?.version} (#{@robot?.name})"
+        "User-Agent"    : "Brobbot/#{@robot?.version} (#{@robot?.name})"
 
       options =
         "agent"  : false
@@ -257,7 +257,7 @@ class CampfireStreaming extends EventEmitter
       "Authorization" : @authorization
       "Host"          : @host
       "Content-Type"  : "application/json"
-      "User-Agent"    : "Hubot/#{@robot?.version} (#{@robot?.name})"
+      "User-Agent"    : "Brobbot/#{@robot?.version} (#{@robot?.name})"
 
     options =
       "agent"  : false

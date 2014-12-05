@@ -4,4 +4,4 @@ set -e
 
 source script/bootstrap
 
-bin/hubot "$@"
+bin/brobbot "$@"

@@ -12,16 +12,16 @@ Response = require './response'
 {Listener,TextListener} = require './listener'
 {EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage,TextMessage} = require './message'
 
-HUBOT_DEFAULT_ADAPTERS = [
+BROBBOT_DEFAULT_ADAPTERS = [
   'campfire'
   'shell'
 ]
 
-HUBOT_DEFAULT_BRAINS = [
+BROBBOT_DEFAULT_BRAINS = [
   'dumb'
 ]
 
-HUBOT_DOCUMENTATION_SECTIONS = [
+BROBBOT_DOCUMENTATION_SECTIONS = [
   'description'
   'dependencies'
   'configuration'
@@ -43,10 +43,10 @@ class Robot
   # brainPath - A String of the path to local brains.
   # brain     - A String of the brain name.
   # httpd       - A Boolean whether to enable the HTTP daemon.
-  # name        - A String of the robot name, defaults to Hubot.
+  # name        - A String of the robot name, defaults to Brobbot.
   #
   # Returns nothing.
-  constructor: (adapterPath, adapter, brainPath, brain, httpd, name = 'Hubot') ->
+  constructor: (adapterPath, adapter, brainPath, brain, httpd, name = 'Brobbot') ->
     @name      = name
     @nameRegex = new RegExp "^\\s*#{name}:?\\s+", 'i'
     @events    = new EventEmitter
@@ -56,7 +56,7 @@ class Robot
     @commands  = []
     @listeners = []
     @respondListeners = []
-    @logger    = new Log process.env.HUBOT_LOG_LEVEL or 'info'
+    @logger    = new Log process.env.BROBBOT_LOG_LEVEL or 'info'
     @pingIntervalId = null
 
     @parseVersion()
@@ -205,7 +205,7 @@ class Robot
         @emit('error', error, new @Response(@, message, []))
 
     if @messageIsToMe message
-      #for respond listeners, chop off the hubot's name/alias
+      #for respond listeners, chop off the brobbot's name/alias
       respondText = message.text.replace @nameRegex, ''
 
       if @aliasRegex
@@ -254,15 +254,15 @@ class Robot
         Fs.readdirSync(path).sort().forEach (file) =>
           @loadFile path, file
 
-  # Public: Load scripts specfied in the `hubot-scripts.json` file.
+  # Public: Load scripts specfied in the `brobbot-scripts.json` file.
   #
-  # path    - A String path to the hubot-scripts files.
+  # path    - A String path to the brobbot-scripts files.
   # scripts - An Array of scripts to load.
   #
   # Returns promise.
-  loadHubotScripts: (path, scripts) ->
+  loadBrobbotScripts: (path, scripts) ->
     @ready.then =>
-      @logger.debug "Loading hubot-scripts from #{path}"
+      @logger.debug "Loading brobbot-scripts from #{path}"
 
       scripts.forEach (script) =>
         @loadFile path, script
@@ -270,7 +270,7 @@ class Robot
   # Public: Load scripts from packages specfied in the
   # `external-scripts.json` file.
   #
-  # packages - An Array of packages containing hubot scripts to load.
+  # packages - An Array of packages containing brobbot scripts to load.
   #
   # Returns promise.
   loadExternalScripts: (packages) ->
@@ -301,7 +301,7 @@ class Robot
     app = express()
 
     app.use (req, res, next) =>
-      res.setHeader "X-Powered-By", "hubot/#{@name}"
+      res.setHeader "X-Powered-By", "brobbot/#{@name}"
       next()
 
     app.use express.basicAuth user, pass if user and pass
@@ -321,7 +321,7 @@ class Robot
     if herokuUrl
       herokuUrl += '/' unless /\/$/.test herokuUrl
       @pingIntervalId = setInterval =>
-        HttpClient.create("#{herokuUrl}hubot/ping").post() (err, res, body) =>
+        HttpClient.create("#{herokuUrl}brobbot/ping").post() (err, res, body) =>
           @logger.info 'keep alive ping!'
       , 5 * 60 * 1000
 
@@ -337,7 +337,7 @@ class Robot
       delete: ()=> @logger.warning msg
 
 
-  # Load the brain Hubot is going to use.
+  # Load the brain Brobbot is going to use.
   #
   # path    - A String of the path to brain if local.
   # brain - A String of the brain name to use.
@@ -347,10 +347,10 @@ class Robot
     @logger.debug "Loading brain #{brain}"
 
     try
-      path = if brain in HUBOT_DEFAULT_BRAINS
+      path = if brain in BROBBOT_DEFAULT_BRAINS
         "#{path}/#{brain}"
       else
-        "hubot-#{brain}-brain"
+        "brobbot-#{brain}-brain"
 
       @brain = new (require(path)) @
       return @brain.ready or Q(@brain)
@@ -358,7 +358,7 @@ class Robot
       @logger.error "Cannot load brain #{brain} - #{err.stack}"
       process.exit(1)
 
-  # Load the adapter Hubot is going to use.
+  # Load the adapter Brobbot is going to use.
   #
   # path    - A String of the path to adapter if local.
   # adapter - A String of the adapter name to use.
@@ -368,10 +368,10 @@ class Robot
     @logger.debug "Loading adapter #{adapter}"
 
     try
-      path = if adapter in HUBOT_DEFAULT_ADAPTERS
+      path = if adapter in BROBBOT_DEFAULT_ADAPTERS
         "#{path}/#{adapter}"
       else
-        "hubot-#{adapter}"
+        "brobbot-#{adapter}"
 
       @adapter = require(path).use @
       return @adapter.ready or Q(@adapter)
@@ -407,7 +407,7 @@ class Robot
       continue if cleanedLine.toLowerCase() is 'none'
 
       nextSection = cleanedLine.toLowerCase().replace(':', '')
-      if nextSection in HUBOT_DOCUMENTATION_SECTIONS
+      if nextSection in BROBBOT_DOCUMENTATION_SECTIONS
         currentSection = nextSection
         scriptDocumentation[currentSection] = []
       else
@@ -422,7 +422,7 @@ class Robot
       for line in body.split("\n")
         break    if not (line[0] is '#' or line.substr(0, 2) is '//')
         continue if not line.match('-')
-        cleanedLine = line[2..line.length].replace(/^hubot/i, @name).trim()
+        cleanedLine = line[2..line.length].replace(/^brobbot/i, @name).trim()
         scriptDocumentation.commands.push cleanedLine
         @commands.push cleanedLine
 
@@ -495,7 +495,7 @@ class Robot
     if @redisClient
       @redisClient.close()
 
-  # Public: The version of Hubot from npm
+  # Public: The version of Brobbot from npm
   #
   # Returns a String of the version number.
   parseVersion: ->
@@ -532,7 +532,7 @@ class Robot
   # Returns a ScopedClient instance.
   http: (url) ->
     HttpClient.create(url)
-      .header('User-Agent', "Hubot/#{@version}")
+      .header('User-Agent', "Brobbot/#{@version}")
 
   segment: (segmentName) ->
     new RobotSegment @, segmentName

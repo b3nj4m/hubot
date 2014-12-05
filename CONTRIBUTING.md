@@ -2,11 +2,11 @@
 
 We love pull requests. Here's a quick guide:
 
-1. Check for [existing issues](https://github.com/github/hubot/issues) for duplicates and confirm that it hasn't been fixed already in the [master branch](https://github.com/github/hubot/commits/master)
+1. Check for [existing issues](https://github.com/github/brobbot/issues) for duplicates and confirm that it hasn't been fixed already in the [master branch](https://github.com/github/brobbot/commits/master)
 2. Fork the repo, and clone it locally
 3. `npm link` to make your cloned repo available to npm
 4. Follow [Getting Started](docs/README.md) to generate a testbot (no automated tests yet :sob:)
-5. `npm link hubot` in your newly created bot to use your hubot fork
+5. `npm link brobbot` in your newly created bot to use your brobbot fork
 6. Create a new branch for your contribution
 7. Push to your fork and submit a pull request
 
@@ -20,7 +20,7 @@ Some things that will increase the chance that your pull request is accepted:
   update anything is affected by your contribution.
 * Include any information that would be relevant to reproducing bugs, use cases for new features, etc.
 
-* Discuss the impact on existing [hubot installs](docs/README.md), [hubot adapters](docs/adapters.md), and [hubot scripts](docs/scripting.md) (e.g. backwards compatibility)
+* Discuss the impact on existing [brobbot installs](docs/README.md), [brobbot adapters](docs/adapters.md), and [brobbot scripts](docs/scripting.md) (e.g. backwards compatibility)
   * If the change does break compatibility, how can it be updated to become backwards compatible, while directing users to the new way of doing things?
 * Your commits are associated with your GitHub user: https://help.github.com/articles/why-are-my-commits-linked-to-the-wrong-user/
 * Make pull requests against a feature branch,
@@ -38,7 +38,7 @@ Syntax:
 
 # Releasing
 
-This section is for maintainers of hubot. Here's the current process for releasing:
+This section is for maintainers of brobbot. Here's the current process for releasing:
 
 * create a `release-vX.X.X` branch to release off of
 * determine what version to release as:

@@ -1,4 +1,4 @@
-# Tests hubot listeners
+# Tests brobbot listeners
 module.exports = (robot) ->
   assert = require 'assert'
   robot.hear /static/i, (msg) ->

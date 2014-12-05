@@ -17,7 +17,7 @@ danger = Tests.danger helper, (req, res, url) ->
       ]
   )
 
-# callbacks for when hubot sends messages
+# callbacks for when brobbot sends messages
 mu    = "http://mustachify.me/?src="
 tests = [
   (msg) -> assert.equal "#{mu}(foo)#.png", msg
