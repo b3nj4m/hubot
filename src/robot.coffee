@@ -19,7 +19,6 @@ HUBOT_DEFAULT_ADAPTERS = [
 
 HUBOT_DEFAULT_BRAINS = [
   'dumb'
-  'redis'
 ]
 
 HUBOT_DOCUMENTATION_SECTIONS = [
@@ -351,7 +350,7 @@ class Robot
       path = if brain in HUBOT_DEFAULT_BRAINS
         "#{path}/#{brain}"
       else
-        "hubot-#{brain}"
+        "hubot-#{brain}-brain"
 
       @brain = new (require(path)) @
       return @brain.ready or Q(@brain)
