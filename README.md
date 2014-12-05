@@ -9,13 +9,13 @@ for details on getting up and running with your very own robot friend.
 
 ## Forked from Hubot
 
-Brobbot was forked from Hubot. The main motivation being better support for scripts with persistant storage.
+Brobbot was forked from Hubot. The main motivation being better support for scripts with persistent storage.
 
 ### Key differences
 
 #### Loadable brain modules
 
-Brobbot's brain can be a simple Javascript object held in-memory (the deafult `dumb` brain), but you can also load a different brain module to enable a large, fast, persistant brain.
+Brobbot's brain can be a simple Javascript object held in-memory (the deafult `dumb` brain), but you can also load a different brain module to enable a large, fast, persistent brain.
 Brobbot's brain operations return promises to make your async code nice and clean.
 Brain modules can also provide a `ready` promise in order to signal that the brain is connected/authenticated/whatever it needs to do before it's ready.
 
