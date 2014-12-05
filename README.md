@@ -25,7 +25,7 @@ To load a brain module, use the `-b` switch when running `bin/brobbot`. e.g.
 bin/brobbot -b redis
 ```
 
-- [Redis brain](https://npmjs.org/packages/brobbot-redis-brain)
+- [Redis brain](https://npmjs.org/package/brobbot-redis-brain)
 - More to come soon!
 
 #### Message queues
