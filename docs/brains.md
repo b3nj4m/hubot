@@ -13,6 +13,10 @@ Most methods should return a promise.
 
 ## API
 
+### ready
+
+A promise to be resolved when the brain is ready for use
+
 ### dump()
 
 Take a dump
