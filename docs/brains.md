@@ -5,6 +5,11 @@ When a script is loaded, it's given a brain-segment which helps each script oper
 It also provides hooks for serializing and deserializing data.
 Most methods should return a promise.
 
+## Available brains
+
+- [dumb](../src/brains/dumb.coffee) (the default)
+- [Redis](https://npmjs.org/package/brobbot-redis-brain)
+- More coming soon!
 
 ## API
 
