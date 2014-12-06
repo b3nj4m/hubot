@@ -36,7 +36,7 @@ Returns promise
 
 Get all the keys for the given hash table name
 
-promise for array.
+Returns promise for array.
 
 ### hvals(table)
 
@@ -80,9 +80,9 @@ Override this in your brain module to perform any necessary cleanup (e.g. closin
 
 Returns promise
 
-Merge keys against the in memory representation.
-
 ### mergeData(data)
+
+Merge keys against the in memory representation.
 
 Returns promise
 
@@ -140,9 +140,9 @@ fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
 
 Returns promise an Array of User instances matching the fuzzy name.
 
-### segment(segment)
+### segment(segmentName)
 
-Return a brain segment bound to the given key-prefix.
+Return a brain segment using `segmentName` as a key prefix
 
 Returns BrainSegment
 
