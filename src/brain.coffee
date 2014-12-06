@@ -22,13 +22,19 @@ class Brain extends EventEmitter
   #
   # Returns promise for object
   dump: ->
-    Q(_.transform(@data._private, (result, key, val) => result[@unkey key] = value))
+    @getall()
 
   # Public: get all the keys
   #
   # Returns promise for array
   keys: ->
     Q(_.map(_.keys(@data._private), @unkey.bind(@)))
+
+  # Public: get all values as an object
+  #
+  # Returns promise for object
+  getall: ->
+    Q(_.transform(@data._private, (result, key, val) => result[@unkey key] = value))
 
   # Public: transform a key from internal brain key, to user-facing key
   #
