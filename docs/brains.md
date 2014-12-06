@@ -8,9 +8,27 @@ Most methods should return a promise.
 
 ## API
 
+### dump()
+
+Take a dump
+
+Returns promise for object.
+
+### keys()
+
+Get all the keys
+
+Returns promise for array
+
 ### key(key)
 
-Transform the given key to be appropriate for use in the brain
+Transform the given key for internal use
+
+Returns string.
+
+### unkey(key)
+
+Transform the given key from internal use key to user-facing key
 
 Returns string.
 

@@ -18,7 +18,25 @@ class Brain extends EventEmitter
     @autoSave = true
     @ready = Q(@)
 
-  # Public: get a key appropriate for use in the brain
+  # Take a dump
+  #
+  # Returns promise for object
+  dump: ->
+    Q(_.transform(@data._private, (result, key, val) => result[@unkey key] = value))
+
+  # Public: get all the keys
+  #
+  # Returns promise for array
+  keys: ->
+    Q(_.map(_.keys(@data._private), @unkey.bind(@)))
+
+  # Public: transform a key from internal brain key, to user-facing key
+  #
+  # Returns string
+  unkey: (key) ->
+    key
+
+  # Public: transform the key for internal use
   # overridden by brain-segment
   #
   # Returns string.
