@@ -5,29 +5,9 @@
 You will need [node.js](http://nodejs.org/) and [npm](https://npmjs.org/). Joyent has
 an [excellent blog post on how to get those installed](http://joyent.com/blog/installing-node-and-npm), so we'll omit those details here.
 
-Once node and npm are ready, we can install the brobbot generator:
+Once you have node installed, you can clone brobbot using git.
 
-    %  npm install -g yo generator-brobbot
-
-This will give us the `brobbot` [yeoman](http://yeoman.io/) generator. Now we
-can make a new directory, and generate a new instance of brobbot in it. For example, if
-we wanted to make a bot called mybrobbot:
-
-
-    % mkdir mybrobbot
-    % cd mybrobbot
-    % yo brobbot
-
-At this point, you'll be asked a few questions about who is creating the bot,
-and which [adapter](adapters.md) you'll be using. Adapters are brobbot's way of
-integrating with different chat providers.
-
-If you are using git, the generated directory includes a .gitignore, so you can
-initialize and add everything:
-
-    % git init
-    % git add .
-    % git commit -m "Initial commit"
+    % git clone git@github.com:b3nj4m/hubot mybrobbot
 
 You now have your own functional brobbot! There's a `bin/brobbot`
 command for convenience, to handle installing npm dependencies, loading scripts,
@@ -86,21 +66,13 @@ case-insensitive, and can be prefixed with `@` or suffixed with `:`. These are e
 
 Brobbot's power comes through scripting. Read [docs/scripting.md](scripting.md) for the deal on bending brobbot to your will using code.
 
-There are many community-contributed scripts available through [brobbot-scripts](https://github.com/github/brobbot-scripts). To use scripts from it:
-
-* Make sure `brobbot-scripts` is listed as a dependency in `package.json` (it should by default)
-* Update `brobbot-scripts.json` to include the script you want in the list. Make sure the file is still valid JSON!
-* Review the script to see if there's dependencies or configuration to add
-
-In addition, there are scripts released as npm packages. If you find one you want to use:
+There are scripts released as npm packages. If you find one you want to use:
 
 1. Add the package to the list of `dependencies` into your `package.json`
 2. `npm install` to make sure its installed
 
 To enable third-party scripts that you've added you will need to add the package
 name as a double quoted string to the `external-scripts.json` file in this repo.
-
-**Please note that external scripts may become the default for brobbot scripts in future releases.**
 
 ## Adapters
 

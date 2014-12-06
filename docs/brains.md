@@ -2,3 +2,147 @@
 
 Brobbot's brain is pretty cool. It implements a pretty generic key->value store interface, modeled after the redis api.
 When a script is loaded, it's given a brain-segment which helps each script operate in a separete key-space.
+It also provides hooks for serializing and deserializing data.
+Most methods should return a promise.
+
+
+## API
+
+### key(key)
+
+Transform the given key to be appropriate for use in the brain
+
+Returns string.
+
+### set(key, value)
+
+Store key-value pair
+
+Returns promise
+
+### get(key)
+
+Get value by key
+
+Returns promise
+
+### incrby(key, num)
+
+increment the value by `num` atomically
+
+Returns promise
+
+### hkeys(table)
+
+Get all the keys for the given hash table name
+
+promise for array.
+
+### hvals(table)
+
+Get all the values for the given hash table name
+
+Returns promise for array.
+
+### hset(table, key, value)
+
+Set a value in the specified hash table
+
+Returns promise for the value.
+
+### hget(table, key)
+
+Get a value from the specified hash table.
+
+Returns promise for the value.
+
+### hgetall(table)
+
+Get the whole hash table as an object.
+
+Returns promise for object.
+
+### hincrby(table, key, num)
+
+increment the hash value by num atomically
+
+Returns promise
+
+### remove(key)
+
+Remove value by key
+
+Returns promise
+
+### close
+
+Override this in your brain module to perform any necessary cleanup (e.g. closing connections)
+
+Returns promise
+
+Merge keys against the in memory representation.
+
+### mergeData(data)
+
+Returns promise
+
+Caveats: Deeply nested structures don't merge well.
+
+### serialize(value)
+
+Perform any necessary pre-set serialization on a value
+
+Returns serialized value
+
+### deserialize(value)
+
+Perform any necessary post-get deserialization on a value
+
+Returns deserialized value
+
+### users
+
+Get an Array of User objects stored in the brain.
+
+Returns promise for an Array of User objects.
+
+### addUser(user)
+
+Add a user to the data-store
+
+Returns promise for user
+
+### userForId(id, userData)
+
+Get or create a User object given a unique identifier.
+
+Returns promise for a User instance of the specified user.
+
+### userForName(name)
+
+Get a User object given a name.
+
+Returns promise for a User instance for the user with the specified name.
+
+### usersForRawFuzzyName(fuzzyName)
+
+Get all users whose names match fuzzyName. Currently, match
+means 'starts with', but this could be extended to match initials,
+nicknames, etc.
+
+Returns promise an Array of User instances matching the fuzzy name.
+
+### usersForFuzzyName(fuzzyName)
+
+If fuzzyName is an exact match for a user, returns an array with
+just that user. Otherwise, returns an array of all users for which
+fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
+
+Returns promise an Array of User instances matching the fuzzy name.
+
+### segment(segment)
+
+Return a brain segment bound to the given key-prefix.
+
+Returns BrainSegment
+

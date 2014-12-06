@@ -101,41 +101,11 @@ class Brain extends EventEmitter
     delete @data._private[@key key]
     Q(@)
 
-  # Public: Emits the 'save' event so that 'brain' scripts can handle
-  # persisting.
-  #
-  # Returns promise
-  save: ->
-    @emit 'save', @data
-    Q(@)
-
-  # Public: Emits the 'close' event so that 'brain' scripts can handle closing.
+  # Public: nothin to close
   #
   # Returns promise
   close: ->
-    clearInterval @saveInterval
-    @save()
-    @emit 'close'
     Q(@)
-
-  # Public: Enable or disable the automatic saving
-  #
-  # enabled - A boolean whether to autosave or not
-  #
-  # Returns nothing
-  setAutoSave: (enabled) ->
-    @autoSave = enabled
-
-  # Public: Reset the interval between save function calls.
-  #
-  # seconds - An Integer of seconds between saves.
-  #
-  # Returns nothing.
-  resetSaveInterval: (seconds) ->
-    clearInterval @saveInterval if @saveInterval
-    @saveInterval = setInterval =>
-      @save() if @autoSave
-    , seconds * 1000
 
   # Public: Merge keys against the in memory representation.
   #
