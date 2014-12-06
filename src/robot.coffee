@@ -197,6 +197,8 @@ class Robot
   receive: (message) ->
     matched = false
 
+    message.addressedToBrobbot = @messageIsToMe message
+
     for listener in @listeners
       try
         matched = listener.call(message) or matched
@@ -204,7 +206,7 @@ class Robot
       catch error
         @emit('error', error, new @Response(@, message, []))
 
-    if @messageIsToMe message
+    if message.addressedToBrobbot
       #for respond listeners, chop off the brobbot's name/alias
       respondText = message.text.replace @nameRegex, ''
 

@@ -97,6 +97,13 @@ class Brain extends EventEmitter
   hget: (table, key) ->
     Q(@deserialize @_hprivate[@key table][key])
 
+  # Public: Delete a field from a hash table
+  #
+  # Returns promise
+  hdel: (table, key) ->
+    delete @_hprivate[@key table][key]
+    Q(@)
+
   # Public: Get the whole hash table as an object.
   #
   # Returns: promise for object.
@@ -118,6 +125,9 @@ class Brain extends EventEmitter
   remove: (key) ->
     delete @data._private[@key key]
     Q(@)
+  # alias for remove
+  del: (key) ->
+    @remove key
 
   # Public: nothin to close
   #

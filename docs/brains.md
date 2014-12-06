@@ -83,6 +83,12 @@ Get a value from the specified hash table.
 
 Returns promise for the value.
 
+### hdel(table, key)
+
+Remove a value from the specified hash table.
+
+Returns promise.
+
 ### hgetall(table)
 
 Get the whole hash table as an object.
@@ -96,6 +102,8 @@ increment the hash value by num atomically
 Returns promise
 
 ### remove(key)
+
+Alias: `del`
 
 Remove value by key
 
