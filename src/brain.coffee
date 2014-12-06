@@ -18,18 +18,24 @@ class Brain extends EventEmitter
     @autoSave = true
     @ready = Q(@)
 
+  # Public: get a key appropriate for use in the brain
+  # overridden by brain-segment
+  #
+  # Returns string.
+  key: (key) ->
+    key
+
   # Public: Store key-value pair under the private namespace and extend
   # existing.
   #
   # Returns promise
   set: (key, value) ->
     if value is undefined
-      pair = key
+      _.each key, (v, k) =>
+        @set k, v
     else
-      pair = {}
-      pair[key] = value
+      @data._private[@key key] = @serialize value
 
-    _.extend @data._private, _.mapValues(pair, @serialize)
     Q(@)
 
   # Public: Get value by key from the private namespace in @data
@@ -37,7 +43,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   get: (key) ->
-    Q(@deserialize(@data._private[key] ? null))
+    Q(@deserialize(@data._private[@key(key)] ? null))
 
   # Public: increment the value by num atomically
   #
@@ -48,48 +54,51 @@ class Brain extends EventEmitter
 
   # Public: Get all the keys for the given hash table name
   #
-  # Returns array.
+  # Returns promise for array.
   hkeys: (table) ->
-    _.keys(@_hprivate[table] or {})
+    Q(_.keys(@_hprivate[@key table] or {}))
 
   # Public: Get all the values for the given hash table name
   #
-  # Returns array.
+  # Returns promise for array.
   hvals: (table) ->
-    _.values(@_hprivate[table] or {})
+    Q(_.mapValues(@_hprivate[@key table] or {}, @deserialize.bind(@)))
 
   # Public: Set a value in the specified hash table
   #
-  # Returns the value.
+  # Returns promise for the value.
   hset: (table, key, value) ->
+    table = @key table
     @_hprivate[table] = @_hprivate[table] or {}
-    @_hprivate[table][key] = value
+    @_hprivate[table][key] = @serialize value
+    Q(@)
 
   # Public: Get a value from the specified hash table.
   #
-  # Returns: the value.
+  # Returns: promise for the value.
   hget: (table, key) ->
-    @_hprivate[table][key]
+    Q(@deserialize @_hprivate[@key table][key])
 
   # Public: Get the whole hash table as an object.
   #
-  # Returns: object.
+  # Returns: promise for object.
   hgetall: (table) ->
-    _.clone @_hprivate
+    Q(_.clone(_.mapValues(@_hprivate[@key table], @deserialize.bind @)))
 
   # Public: increment the hash value by num atomically
   #
   # Returns promise
   hincrby: (table, key, num) ->
+    table = @key table
     @hget(table, key).then (val) =>
-      @set table, key, val + num
+      @hset table, key, val + num
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists
   #
   # Returns promise
   remove: (key) ->
-    delete @data._private[key] if @data._private[key]?
+    delete @data._private[@key key]
     Q(@)
 
   # Public: Emits the 'save' event so that 'brain' scripts can handle
@@ -134,10 +143,7 @@ class Brain extends EventEmitter
   #
   # Caveats: Deeply nested structures don't merge well.
   mergeData: (data) ->
-    for k of (data or { })
-      @data[k] = data[k]
-
-    Q(@)
+    @set data
 
   # Public: Perform any necessary pre-set serialization on a value
   #
