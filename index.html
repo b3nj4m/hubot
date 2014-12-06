@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Hubot : A customizable life embetterment robot.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Hubot</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/b3nj4m/hubot">View on GitHub</a>
+
+          <h1 id="project_title">Hubot</h1>
+          <h2 id="project_tagline">A customizable life embetterment robot.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/b3nj4m/hubot/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/b3nj4m/hubot/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="brobbot" class="anchor" href="#brobbot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Brobbot</h1>
+
+<p>Brobbot is a chat bot, modeled after GitHub's Campfire bot, hubot. He's pretty
+cool. He's extendable with scripts, and can work on <a href="docs/adapters.md">many different chat services</a>.</p>
+
+<p>This repository provides a library that's distributed by <code>npm</code> that you
+use for building your own bots.  See the <a href="docs/README.md">docs/README.md</a>
+for details on getting up and running with your very own robot friend.</p>
+
+<h2>
+<a id="forked-from-hubot" class="anchor" href="#forked-from-hubot" aria-hidden="true"><span class="octicon octicon-link"></span></a>Forked from Hubot</h2>
+
+<p>Brobbot was forked from Hubot. The main motivation being better support for scripts with persistent storage.</p>
+
+<h3>
+<a id="key-differences" class="anchor" href="#key-differences" aria-hidden="true"><span class="octicon octicon-link"></span></a>Key differences</h3>
+
+<h4>
+<a id="loadable-brain-modules" class="anchor" href="#loadable-brain-modules" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loadable brain modules</h4>
+
+<p>Brobbot's brain can be a simple Javascript object held in-memory (the deafult <code>dumb</code> brain), but you can also load a different brain module to enable a large, fast, persistent brain.
+Brobbot's brain operations return promises to make your async code nice and clean.
+Brain modules can also provide a <code>ready</code> promise in order to signal that the brain is connected/authenticated/whatever it needs to do before it's ready.
+Check out <a href="docs/brains.md">the brain docs</a> for more info.</p>
+
+<p>To load a brain module, use the <code>-b</code> switch when running <code>bin/brobbot</code>. e.g.</p>
+
+<div class="highlight highlight-bash"><pre>bin/brobbot -b redis</pre></div>
+
+<h4>
+<a id="message-queues" class="anchor" href="#message-queues" aria-hidden="true"><span class="octicon octicon-link"></span></a>Message queues</h4>
+
+<p>Brobbot maintains a message queue for each message handler, which means your handler can opt to process one message at a time with no concurrency.</p>
+
+<h4>
+<a id="improved-listener-regex-matching" class="anchor" href="#improved-listener-regex-matching" aria-hidden="true"><span class="octicon octicon-link"></span></a>Improved listener regex matching</h4>
+
+<p>Brobbot removes its name from the beginning of messages addressed to it before testing regexen against the message. This means that you can safely use anchors (<code>^</code>) at the beginning of your <code>respond</code> regex, which helps reduce false-positives.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Hubot maintained by <a href="https://github.com/b3nj4m">b3nj4m</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
