@@ -23,11 +23,17 @@ Take a dump
 
 Returns promise for object.
 
-### keys()
+### keys(searchKey = '')
 
-Get all the keys
+Get all the keys, optionally restricted to keys prefixed with `searchKey`
 
 Returns promise for array
+
+### getall(searchKey = '')
+
+Get all the values as an object, optionally restricted to keys prefixed with `searchKey`
+
+Returns promise for object
 
 ### key(key)
 

@@ -24,17 +24,19 @@ class Brain extends EventEmitter
   dump: ->
     @getall()
 
-  # Public: get all the keys
+  # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
   # Returns promise for array
-  keys: ->
-    Q(_.map(_.keys(@data._private), @unkey.bind(@)))
+  keys: (searchKey = '') ->
+    searchKey = @key searchKey
+    Q(_.map(_.filter(_.keys(@data._private), (key) -> key.indexOf searchKey is 0), @unkey.bind(@)))
 
-  # Public: get all values as an object
+  # Public: get all values as an object, optionally restricted to keys prefixed with `searchKey`
   #
   # Returns promise for object
-  getall: ->
-    Q(_.transform(@data._private, (result, key, val) => result[@unkey key] = value))
+  getall: (searchKey = '') ->
+    searchKey = @key searchKey
+    Q(_.transform(@data._private, (result, key, val) => result[@unkey key] = value if key.indexOf searchKey is 0))
 
   # Public: transform a key from internal brain key, to user-facing key
   #
