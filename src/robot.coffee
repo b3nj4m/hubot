@@ -74,9 +74,6 @@ class Robot
     @adapterName   = adapter
     @errorHandlers = []
 
-    @on "running", =>
-      @brain.resetSaveInterval 5
-
     @on 'error', (err, msg) =>
       @invokeErrorHandlers(err, msg)
     process.on 'uncaughtException', (err) =>

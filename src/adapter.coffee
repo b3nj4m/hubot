@@ -6,9 +6,11 @@ class Adapter extends EventEmitter
   #
   # robot - A Robot instance.
   constructor: (@robot, @brain) ->
+    @readyDefer = Q.defer()
+    @ready = @readyDefer.promise
+
     @connectedDefer = Q.defer()
     @connected = @connectedDefer.promise
-    @.on 'connected', @connectedDefer.resolve.bind(@connectedDefer)
 
   # Public: Raw method for sending data back to the chat source. Extend this.
   #
