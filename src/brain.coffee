@@ -27,13 +27,13 @@ class Brain extends EventEmitter
   #
   # Returns int
   llen: (key) ->
-    Q(@_private[@key key].length)
+    Q(@data._private[@key key].length)
 
   # Public: set the list value at the specified index
   #
   # Returns promise
   lset: (key, index, value) ->
-    @_private[@key key][index] = @serialize value
+    @data._private[@key key][index] = @serialize value
     Q @
 
   # Public: insert a value into the list before or after the pivot element.
@@ -41,11 +41,11 @@ class Brain extends EventEmitter
   # Returns promise
   linsert: (key, placement, pivot, value) ->
     key = @key key
-    if @_private[key] isnt undefined
-      index = _.find @_private[key], pivot
+    if @data._private[key] isnt undefined
+      index = _.find @data._private[key], pivot
 
       if index
-        @_private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
+        @data._private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
 
     Q @
 
@@ -54,10 +54,10 @@ class Brain extends EventEmitter
   # Returns promise
   lpush: (key, value) ->
     key = @key key
-    if @_private[key] is undefined
-      @_private[key] = []
+    if @data._private[key] is undefined
+      @data._private[key] = []
 
-    @_private[key].unshift(@serialize value)
+    @data._private[key].unshift(@serialize value)
     Q @
 
   # Public: push a new value onto the right-side of the list
@@ -65,29 +65,29 @@ class Brain extends EventEmitter
   # Returns promise
   rpush: (key, value) ->
     key = @key key
-    if @_private[key] is undefined
-      @_private[key] = []
+    if @data._private[key] is undefined
+      @data._private[key] = []
 
-    @_private[key].push(@serialize value)
+    @data._private[key].push(@serialize value)
     Q @
 
   # Public: pop a value off of the left-side of the list
   #
   # Returns promise for list item
   lpop: (key) ->
-    Q(@deserialize(@_private[@key key].shift()))
+    Q(@deserialize(@data._private[@key key].shift()))
 
   # Public: pop a value off of the right-side of the list
   #
   # Returns promise for list item
   rpop: (key) ->
-    Q(@deserialize(@_private[@key key].pop()))
+    Q(@deserialize(@data._private[@key key].pop()))
 
   # Public: get a list item by index
   #
   # Returns promise for list item
   lindex: (key, index) ->
-    Q(@deserialize(@_private[@key key][index]))
+    Q(@deserialize(@data._private[@key key][index]))
 
   # Public: get a slice of the list
   #
@@ -96,21 +96,21 @@ class Brain extends EventEmitter
     key = @key key
 
     if end < 0
-      end = @_private[key].length + end
+      end = @data._private[key].length + end
 
-    Q(_.map(@_private[key].slice(start, end + 1), @deserialize.bind(@)))
+    Q(_.map(@data._private[key].slice(start, end + 1), @deserialize.bind(@)))
 
   # Public: Add a member to the set specified by `key`
   #
   # Returns promise
   sadd: (key, value) ->
     key = @key key
-    if @_private[key] is undefined
-      @_private[key] = []
+    if @data._private[key] is undefined
+      @data._private[key] = []
 
     #TODO behavior with objects may not be what's expected. maybe make JSON.stringify the default serializer?
-    if not _.contains @private[key], value
-      @_private[key].push(@serialize value)
+    if not _.contains @data._private[key], value
+      @data._private[key].push(@serialize value)
 
     Q @
 
@@ -118,16 +118,16 @@ class Brain extends EventEmitter
   #
   # Returns promise for boolean
   sismember: (key, value) ->
-    Q(_.contains @_private[key], value)
+    Q(_.contains @data._private[key], value)
 
   # Public: Remove a member from the set
   #
   # Returns promise
   srem: (key, value) ->
     key = @key key
-    index = _.findIndex @_private[key], value
+    index = _.findIndex @data._private[key], value
     if index
-      @_private[key].splice(1, index)
+      @data._private[key].splice(1, index)
 
     Q @
 
@@ -135,17 +135,17 @@ class Brain extends EventEmitter
   #
   # Returns promise for int
   scard: (key) ->
-    Q @_private[@key key].length
+    Q @data._private[@key key].length
 
   # Public: Get and remove a random member from the set
   #
   # Returns promise for a set member
   spop: (key) ->
     key = @key key
-    index = _.random 0, @_private[key].length - 1
-    item = @_private[key][index]
+    index = _.random 0, @data._private[key].length - 1
+    item = @data._private[key][index]
 
-    @_private[key].splice(1, index)
+    @data._private[key].splice(1, index)
 
     Q item
 
@@ -154,13 +154,13 @@ class Brain extends EventEmitter
   # Returns promise for a set member
   srandmember: (key) ->
     key = @key key
-    Q @_private[key][_.random 0, @_private[key].length - 1]
+    Q @data._private[key][_.random 0, @data._private[key].length - 1]
 
   # Public: Get all the members of the set
   #
   # Returns promise for array
   smembers: (key) ->
-    Q @_private[key]
+    Q @data._private[key]
 
   # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
@@ -213,41 +213,41 @@ class Brain extends EventEmitter
   #
   # Returns promise for array.
   hkeys: (table) ->
-    Q(_.keys(@_private[@key table] or {}))
+    Q(_.keys(@data._private[@key table] or {}))
 
   # Public: Get all the values for the given hash table name
   #
   # Returns promise for array.
   hvals: (table) ->
-    Q(_.mapValues(@_private[@key table] or {}, @deserialize.bind(@)))
+    Q(_.mapValues(@data._private[@key table] or {}, @deserialize.bind(@)))
 
   # Public: Set a value in the specified hash table
   #
   # Returns promise for the value.
   hset: (table, key, value) ->
     table = @key table
-    @_private[table] = @_private[table] or {}
-    @_private[table][key] = @serialize value
+    @data._private[table] = @data._private[table] or {}
+    @data._private[table][key] = @serialize value
     Q @
 
   # Public: Get a value from the specified hash table.
   #
   # Returns: promise for the value.
   hget: (table, key) ->
-    Q(@deserialize @_private[@key table][key])
+    Q(@deserialize @data._private[@key table][key])
 
   # Public: Delete a field from a hash table
   #
   # Returns promise
   hdel: (table, key) ->
-    delete @_private[@key table][key]
+    delete @data._private[@key table][key]
     Q @
 
   # Public: Get the whole hash table as an object.
   #
   # Returns: promise for object.
   hgetall: (table) ->
-    Q(_.clone(_.mapValues(@_private[@key table], @deserialize.bind @)))
+    Q(_.clone(_.mapValues(@data._private[@key table], @deserialize.bind @)))
 
   # Public: increment the hash value by num atomically
   #
