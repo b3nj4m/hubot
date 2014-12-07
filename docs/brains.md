@@ -23,17 +23,65 @@ Take a dump
 
 Returns promise for object.
 
+### llen(key)
+
+Get the length of the list stored at `key`
+
+Returns promise for int
+
+### lset(key, index, value)
+
+Set the list value at the specified index
+
+Returns promise
+
+### linsert(key, placement, pivot, value)
+
+Insert a list value before/after pivot value
+
+Returns promise
+
+### lpush(key, value)
+
+Push a value onto the left-side of the list
+
+Returns promise
+
+### rpush(key, value)
+
+Push a value onto the right-side of the list
+
+Returns promise
+
+### lpop(key)
+
+Pop a value off of the left-side of the list
+
+Returns promise for the list value
+
+### rpop(key)
+
+Pop a value off of the right-side of the list
+
+Returns promise for the list value
+
+### lindex(key, index)
+
+Get the value at the specified index in the list
+
+Returns promise for the list value
+
+### lrange(key, start, end)
+
+Get the values between the `start` and `end` indeces.
+
+Returns promise for array of list values
+
 ### keys(searchKey = '')
 
 Get all the keys, optionally restricted to keys prefixed with `searchKey`
 
 Returns promise for array
-
-### getall(searchKey = '')
-
-Get all the values as an object, optionally restricted to keys prefixed with `searchKey`
-
-Returns promise for object
 
 ### key(key)
 
