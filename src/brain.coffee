@@ -15,7 +15,7 @@ class Brain extends EventEmitter
       _private: {}
 
     @autoSave = true
-    @ready = Q(@)
+    @ready = Q @
 
   # Take a dump
   #
@@ -34,7 +34,7 @@ class Brain extends EventEmitter
   # Returns promise
   lset: (key, index, value) ->
     @_private[@key key][index] = @serialize value
-    Q(@)
+    Q @
 
   # Public: insert a value into the list before or after the pivot element.
   #
@@ -47,7 +47,7 @@ class Brain extends EventEmitter
       if index
         @_private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
 
-    Q(@)
+    Q @
 
   # Public: push a new value onto the left-side of the list
   #
@@ -58,7 +58,7 @@ class Brain extends EventEmitter
       @_private[key] = []
 
     @_private[key].unshift(@serialize value)
-    Q(@)
+    Q @
 
   # Public: push a new value onto the right-side of the list
   #
@@ -69,7 +69,7 @@ class Brain extends EventEmitter
       @_private[key] = []
 
     @_private[key].push(@serialize value)
-    Q(@)
+    Q @
 
   # Public: pop a value off of the left-side of the list
   #
@@ -99,6 +99,68 @@ class Brain extends EventEmitter
       end = @_private[key].length + end
 
     Q(_.map(@_private[key].slice(start, end + 1), @deserialize.bind(@)))
+
+  # Public: Add a member to the set specified by `key`
+  #
+  # Returns promise
+  sadd: (key, value) ->
+    key = @key key
+    if @_private[key] is undefined
+      @_private[key] = []
+
+    #TODO behavior with objects may not be what's expected. maybe make JSON.stringify the default serializer?
+    if not _.contains @private[key], value
+      @_private[key].push(@serialize value)
+
+    Q @
+
+  # Public: Test whether the member is in the set
+  #
+  # Returns promise for boolean
+  sismember: (key, value) ->
+    Q(_.contains @_private[key], value)
+
+  # Public: Remove a member from the set
+  #
+  # Returns promise
+  srem: (key, value) ->
+    key = @key key
+    index = _.findIndex @_private[key], value
+    if index
+      @_private[key].splice(1, index)
+
+    Q @
+
+  # Public: Get the size of the set
+  #
+  # Returns promise for int
+  scard: (key) ->
+    Q @_private[@key key].length
+
+  # Public: Get and remove a random member from the set
+  #
+  # Returns promise for a set member
+  spop: (key) ->
+    key = @key key
+    index = _.random 0, @_private[key].length - 1
+    item = @_private[key][index]
+
+    @_private[key].splice(1, index)
+
+    Q item
+
+  # Public: Get a random member from the set
+  #
+  # Returns promise for a set member
+  srandmember: (key) ->
+    key = @key key
+    Q @_private[key][_.random 0, @_private[key].length - 1]
+
+  # Public: Get all the members of the set
+  #
+  # Returns promise for array
+  smembers: (key) ->
+    Q @_private[key]
 
   # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
@@ -131,7 +193,7 @@ class Brain extends EventEmitter
     else
       @data._private[@key key] = @serialize value
 
-    Q(@)
+    Q @
 
   # Public: Get value by key from the private namespace in @data
   # or return null if not found.
@@ -166,7 +228,7 @@ class Brain extends EventEmitter
     table = @key table
     @_private[table] = @_private[table] or {}
     @_private[table][key] = @serialize value
-    Q(@)
+    Q @
 
   # Public: Get a value from the specified hash table.
   #
@@ -179,7 +241,7 @@ class Brain extends EventEmitter
   # Returns promise
   hdel: (table, key) ->
     delete @_private[@key table][key]
-    Q(@)
+    Q @
 
   # Public: Get the whole hash table as an object.
   #
@@ -201,7 +263,7 @@ class Brain extends EventEmitter
   # Returns promise
   remove: (key) ->
     delete @data._private[@key key]
-    Q(@)
+    Q @
   # alias for remove
   del: (key) ->
     @remove key
@@ -210,7 +272,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   close: ->
-    Q(@)
+    Q @
 
   # Public: Merge keys against the in memory representation.
   #

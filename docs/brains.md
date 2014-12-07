@@ -77,6 +77,48 @@ Get the values between the `start` and `end` indeces.
 
 Returns promise for array of list values
 
+### sadd(key, value)
+
+Add a member to the set specified by `key`
+
+Returns promise
+
+### sismember(key, value)
+
+Test whether the member is in the set
+
+Returns promise for boolean
+
+### srem(key, value)
+
+Remove a member from the set
+
+Returns promise
+
+### scard(key)
+
+Get the size of the set
+
+Returns promise for int
+
+### spop(key)
+
+Get and remove a random member from the set
+
+Returns promise for a set member
+
+### srandmember(key)
+
+Get a random member from the set
+
+Returns promise for a set member
+
+### smembers(key)
+
+Get all the members of the set
+
+Returns promise for array
+
 ### keys(searchKey = '')
 
 Get all the keys, optionally restricted to keys prefixed with `searchKey`
