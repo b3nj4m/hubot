@@ -9,7 +9,7 @@ class Brain extends EventEmitter
   # Represents somewhat persistent storage for the robot. Extend this.
   #
   # Returns a new Brain with no external storage.
-  constructor: (robot) ->
+  constructor: (@robot) ->
     @data =
       users: {}
       _private: {}
@@ -160,7 +160,7 @@ class Brain extends EventEmitter
   #
   # Returns promise for array
   smembers: (key) ->
-    Q @data._private[key]
+    Q @data._private[@key key]
 
   # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
@@ -200,14 +200,21 @@ class Brain extends EventEmitter
   #
   # Returns promise
   get: (key) ->
-    Q(@deserialize(@data._private[@key(key)] ? null))
+    Q(@deserialize(@data._private[@key key] ? null))
+
+  # Public: Check whether the given key has been set
+  #
+  # Return promise for boolean
+  exists: (key) ->
+    Q(@data._private[@key key] isnt undefined)
 
   # Public: increment the value by num atomically
   #
   # Returns promise
   incrby: (key, num) ->
-    @get(key).then (val) =>
-      @set key, val + num
+    key = @key key
+    @data._private[key] = (@data._private[key] or 0) + num
+    Q @data._private[key]
 
   # Public: Get all the keys for the given hash table name
   #
@@ -254,8 +261,9 @@ class Brain extends EventEmitter
   # Returns promise
   hincrby: (table, key, num) ->
     table = @key table
-    @hget(table, key).then (val) =>
-      @hset table, key, val + num
+    @data._private[table] = @data._private[table] or {}
+    @data._private[table][key] = (@data._private[table][key] or 0) + num
+    Q @data._private[table][key]
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists

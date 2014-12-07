@@ -56,6 +56,7 @@ class Robot
     @commands  = []
     @listeners = []
     @respondListeners = []
+    #TODO namespaced logger per-script
     @logger    = new Log process.env.BROBBOT_LOG_LEVEL or 'info'
     @pingIntervalId = null
 
@@ -176,7 +177,7 @@ class Robot
 
   messageIsToMe: (message) ->
     if @alias
-      @aliasRegex = new RegExp "^\\s*#{@alias}:?\\s+"
+      @aliasRegex = new RegExp "^\\s*#{@alias}:?\\s+", 'i'
     else
       @aliasRegex = false
 
@@ -194,7 +195,7 @@ class Robot
   receive: (message) ->
     matched = false
 
-    message.addressedToBrobbot = @messageIsToMe message
+    message.isAddressedToBrobbot = @messageIsToMe message
 
     for listener in @listeners
       try
@@ -203,7 +204,7 @@ class Robot
       catch error
         @emit('error', error, new @Response(@, message, []))
 
-    if message.addressedToBrobbot
+    if message.isAddressedToBrobbot
       #for respond listeners, chop off the brobbot's name/alias
       respondText = message.text.replace @nameRegex, ''
 

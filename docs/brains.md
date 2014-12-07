@@ -149,6 +149,12 @@ Get value by key
 
 Returns promise
 
+### exists(key)
+
+Check whether the key has been set
+
+Returns promise for boolean
+
 ### incrby(key, num)
 
 increment the value by `num` atomically
