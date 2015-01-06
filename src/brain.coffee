@@ -110,6 +110,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   lrem: (key, value) ->
+    key = @key key
     @data._private[key] = _.without @data._private[key], value
     Q()
 
@@ -195,6 +196,12 @@ class Brain extends EventEmitter
   key: (key) ->
     key
 
+  # Public: get the key for the users
+  #
+  # Returns string.
+  usersKey: () ->
+    'users'
+
   # Public: Store key-value pair under the private namespace and extend
   # existing.
   #
@@ -240,6 +247,12 @@ class Brain extends EventEmitter
   # Returns promise for array.
   hvals: (table) ->
     Q(_.mapValues(@data._private[@key table] or {}, @deserialize.bind(@)))
+
+  # Public: get the size of the hash table.
+  #
+  # Returns promise for int
+  hlen: (table) ->
+    Q(_.size(@data._private[@key table]))
 
   # Public: Set a value in the specified hash table
   #

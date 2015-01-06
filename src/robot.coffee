@@ -181,10 +181,7 @@ class Robot
     else
       @aliasRegex = false
 
-    if @nameRegex.test message.text or (@aliasRegex and @aliasRegex.test message.text)
-      return true
-    
-    return false
+    @nameRegex.test message.text or (@aliasRegex and @aliasRegex.test message.text)
 
   # Public: Passes the given message to any interested Listeners.
   #
@@ -212,6 +209,7 @@ class Robot
         respondText = respondText.replace @aliasRegex, ''
 
       respondMessage = new TextMessage message.user, respondText, message.id
+      respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot
 
       for listener in @respondListeners
         try
@@ -390,6 +388,7 @@ class Robot
   # path - A String path to the file on disk.
   #
   # Returns nothing.
+  #TODO this is lame, provide programmatic api for help or JSON file?
   parseHelp: (path) ->
     @logger.debug "Parsing help for #{path}"
     scriptName = Path.basename(path).replace /\.(coffee|js)$/, ''

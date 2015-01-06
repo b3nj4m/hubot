@@ -9,7 +9,7 @@ class BrainSegment
     obj.key = (key) ->
       brain.key "#{segmentName}:#{key}"
     obj.unkey = (key) ->
-      brain.unkey key.replace(segmentRegex, '')
+      brain.unkey(key).replace(segmentRegex, '')
 
     return obj
 
