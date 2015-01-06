@@ -89,6 +89,12 @@ class Brain extends EventEmitter
   lindex: (key, index) ->
     Q(@deserialize(@data._private[@key key][index]))
 
+  # Public: get an entire list
+  #
+  # Returns promise for array
+  lgetall: (key) ->
+    @lrange(key, 0, -1)
+
   # Public: get a slice of the list
   #
   # Returns promise for array
@@ -99,6 +105,13 @@ class Brain extends EventEmitter
       end = @data._private[key].length + end
 
     Q(_.map(@data._private[key].slice(start, end + 1), @deserialize.bind(@)))
+
+  # Public: remove values from a list
+  #
+  # Returns promise
+  lrem: (key, value) ->
+    @data._private[key] = _.without @data._private[key], value
+    Q()
 
   # Public: Add a member to the set specified by `key`
   #
