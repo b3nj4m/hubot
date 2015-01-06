@@ -77,6 +77,18 @@ Get the values between the `start` and `end` indeces.
 
 Returns promise for array of list values
 
+### lgetall(key)
+
+Get all the values in a list
+
+Returns promise for array of list values
+
+### lrem(key, value)
+
+Remove all instances of `value` in the list
+
+Returns promise.
+
 ### sadd(key, value)
 
 Add a member to the set specified by `key`
@@ -172,6 +184,12 @@ Returns promise for array.
 Get all the values for the given hash table name
 
 Returns promise for array.
+
+### hlen(table)
+
+Get the size of the hash table.
+
+Returns promise for int.
 
 ### hset(table, key, value)
 
