@@ -8,9 +8,9 @@ class Adapter extends EventEmitter
   constructor: (@robot, @brain) ->
     @readyDefer = Q.defer()
     @ready = @readyDefer.promise
-
-    @connectedDefer = Q.defer()
-    @connected = @connectedDefer.promise
+    # for compatibility with hubot adapters
+    @on 'connected', =>
+      @readyDefer.resolve()
 
   # Public: Raw method for sending data back to the chat source. Extend this.
   #

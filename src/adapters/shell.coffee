@@ -8,8 +8,6 @@ class Shell extends Adapter
   constructor: (@robot, @brain) ->
     super(@robot, @brain)
 
-    @readyDefer.resolve()
-
   send: (envelope, strings...) ->
     unless process.platform is 'win32'
       console.log "\x1b[01;32m#{str}\x1b[0m" for str in strings
@@ -41,7 +39,7 @@ class Shell extends Adapter
       @robot.brain.userForId('1', name: 'Shell', room: 'Shell').then (user) =>
         @receive new TextMessage user, buffer, 'messageId'
 
-    @connectedDefer.resolve()
+    @emit 'connected'
 
     @repl.setPrompt "#{@robot.name}> "
     @repl.prompt()

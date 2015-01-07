@@ -67,12 +67,13 @@ class Robot
       @setupNullRouter()
 
     @brainReady = @loadBrain brainPath, brain
-    @adapterReady = @brainReady.then =>
-      @loadAdapter adapterPath, adapter
+    @adapterReady = @loadAdapter adapterPath, adapter
 
-    @ready = Q.all [@brainReady, @adapterReady]
+    #TODO
+    @ready = @brainReady
+    @connected = @adapterReady
 
-    @adapterName   = adapter
+    @adapterName = adapter
     @errorHandlers = []
 
     @on 'error', (err, msg) =>
@@ -190,36 +191,37 @@ class Robot
   #
   # Returns nothing.
   receive: (message) ->
-    matched = false
+    @connected.then =>
+      matched = false
 
-    message.isAddressedToBrobbot = @messageIsToMe message
+      message.isAddressedToBrobbot = @messageIsToMe message
 
-    for listener in @listeners
-      try
-        matched = listener.call(message) or matched
-        break if message.done
-      catch error
-        @emit('error', error, new @Response(@, message, []))
-
-    if message.isAddressedToBrobbot
-      #for respond listeners, chop off the brobbot's name/alias
-      respondText = message.text.replace @nameRegex, ''
-
-      if @aliasRegex
-        respondText = respondText.replace @aliasRegex, ''
-
-      respondMessage = new TextMessage message.user, respondText, message.id
-      respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot
-
-      for listener in @respondListeners
+      for listener in @listeners
         try
-          matched = listener.call(respondMessage) or matched
-          break if respondMessage.done
+          matched = listener.call(message) or matched
+          break if message.done
         catch error
-          @emit('error', error, new @Response(@, respondMessage, []))
+          @emit('error', error, new @Response(@, message, []))
 
-    if message not instanceof CatchAllMessage and not matched
-      @receive new CatchAllMessage(message)
+      if message.isAddressedToBrobbot
+        #for respond listeners, chop off the brobbot's name/alias
+        respondText = message.text.replace @nameRegex, ''
+
+        if @aliasRegex
+          respondText = respondText.replace @aliasRegex, ''
+
+        respondMessage = new TextMessage message.user, respondText, message.id
+        respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot
+
+        for listener in @respondListeners
+          try
+            matched = listener.call(respondMessage) or matched
+            break if respondMessage.done
+          catch error
+            @emit('error', error, new @Response(@, respondMessage, []))
+
+      if message not instanceof CatchAllMessage and not matched
+        @receive new CatchAllMessage(message)
 
   # Public: Loads a file in path.
   #

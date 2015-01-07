@@ -17,6 +17,7 @@ Brobbot was forked from Hubot. The main motivation being better support for scri
 
 Brobbot's brain can be a simple Javascript object held in-memory (the deafult `dumb` brain), but you can also load a different brain module to enable a large, fast, persistent brain.
 Brobbot's brain operations return promises to make your async code nice and clean.
+Each module gets its own keyspace within the brain, so modules don't have to worry about clobbering each others' data.
 Brain modules can also provide a `ready` promise in order to signal that the brain is connected/authenticated/whatever it needs to do before it's ready.
 Check out [the brain docs](docs/brains.md) for more info.
 
