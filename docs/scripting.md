@@ -4,21 +4,9 @@ Brobbot out of the box doesn't do too much, but it is an extensible, scriptable 
 
 ## Anatomy of script loading
 
-There are three main sources to load scripts from:
+There is one main source to load scripts from:
 
-* all scripts __bundled__ with your brobbot installation under `scripts/` dir
-* __community scripts__ specified in `brobbot-scripts.json` and shipped in the `brobbot-scripts` npm package
 * scripts loaded from external __npm packages__ and specified in `external-scripts.json`
-
-### Community Scripts
-
-To use community scripts, place the name of the script in the `brobbot-scripts.json` file. For example:
-
-```coffeescript
-["redis-brain.coffee", "shipit.coffee", "whatis.coffee", "<new-script-name>.coffee"]
-```
-
-(Please check the [script catalog](http://brobbot-script-catalog.herokuapp.com) and the [brobbot-scripts repo](https://github.com/github/brobbot-scripts/tree/master/src/scripts) for scripts carefully crafted for you by lots of nice folks)
 
 ### NPM Packages
 
@@ -26,35 +14,26 @@ Another way is to install scripts via an npm package (you can check some of them
 
 To load those scripts to your brobbot installation, you need to place them in the `external-scripts.json` file after adding the required npm packages to the `package.json` dependency section.
 
-Here is an example of adding the [brobbot-botriot](https://npmjs.org/package/brobbot-botriot) npm package:
+Here is an example of adding the [brobbot-botriot](https://npmjs.org/package/brobbot-quote) npm package:
 
 ```json
 {
  ...
 
   "dependencies": {
-    "brobbot":         ">= 2.6.0 < 3.0.0",
-    "brobbot-scripts": ">= 2.5.0 < 3.0.0",
-    "brobbot-botriot": "",
+    "brobbot":         "3.x",
+    "brobbot-quote": "3.x"
   },
 
 ...
 }
 ```
 
-### Bundled Scripts
-
-Last but not least, you can put your own scripts under the `scripts/` directory. All scripts placed there are automatically loaded and ready to use with your brobbot.
-
-You can also use this for customizing scripts from other sources. Just copy the *.coffee file into this directory and make whatever changes you'd like.
-
-Instructions for writing your own scripts can be found below.
-
 ## Anatomy of a script
 
 When you created your brobbot, the generator also created a `scripts` directory. If you peek around there, you will see some examples of scripts. For a script to be a script, it needs to:
 
-* live in a directory on the brobbot script load path (`src/scripts` and `scripts` by default)
+* live under the root directory of the brobbot instance
 * be a `.coffee` or `.js` file
 * export a function
 
@@ -117,6 +96,8 @@ module.exports = (robot) ->
 ```
 
 The `robot.hear /badgers/` callback sends a message exactly as specified regardless of who said it, "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS".
+
+The `msg` object has an attribute, `isAddressedToBrobbot`, which you can use to differentiate messages addressed to brobbot from those that aren't.
 
 If a user Dave says "HAL: open the pod bay doors", `robot.respond /open the pod bay doors/i` callback sends a message "Dave: I'm afraid I can't let you do that."
 
@@ -344,8 +325,7 @@ Brobbot uses [npm](https://github.com/isaacs/npm) to manage its dependencies. To
 
 ```json
   "dependencies": {
-    "brobbot":         "2.5.5",
-    "brobbot-scripts": "2.4.6",
+    "brobbot":         "3.x",
     "lolimadeupthispackage": "1.2.3"
   },
 ```
@@ -524,30 +504,28 @@ When documenting commands, here are some best practices:
 * For `robot.respond` documentation, always prefix with `brobbot`. Brobbot will automatically replace this with your robot's name, or the robot's alias if it has one
 * Check out how man pages document themselves. In particular, brackets indicate optional parts, '...' for any number of arguments, etc.
 
-The other sections are more relevant to developers of the bot, particularly dependencies, configuration variables, and notes. All contributions to [brobbot-scripts](https://github.com/github/brobbot-scripts) should include all these sections that are related to getting up and running with the script.
+The other sections are more relevant to developers of the bot, particularly dependencies, configuration variables, and notes.
 
 
 
 ## Persistence
 
-Brobbot has an in-memory key-value store exposed as `robot.brain` that can be
-used to store and retrieve data by scripts.
+Brobbot supports loadable brain modules for persisting data. The default module is just an in-memory Javascript object.
+The API is based on the Redis api; indeed you can even install a Redis-backed brobbot brain (https://npmjs.org/package/brobbot-redis-brain).
 
 ```coffeescript
 robot.respond /have a soda/i, (msg) ->
   # Get number of sodas had (coerced to a number).
-  sodasHad = robot.brain.get('totalSodas') * 1 or 0
-
-  if sodasHad > 4
-    msg.reply "I'm too fizzy.."
-
-  else
-    msg.reply 'Sure!'
+  robot.brain.get('totalSodas').then (sodasHad) ->
+    if sodasHad > 4
+      msg.reply "I'm too fizzy.."
+    else
+      msg.reply 'Sure!'
 
     robot.brain.set 'totalSodas', sodasHad+1
 robot.respond /sleep it off/i, (msg) ->
-  robot.brain.set 'totalSodas', 0
-  robot.respond 'zzzzz'
+  robot.brain.set('totalSodas', 0).then () ->
+    robot.respond 'zzzzz'
 ```
 
 If the script needs to lookup user data, there are methods on `robot.brain` for looking up one or many users by id, name, or 'fuzzy' matching of name: `userForName`, `userForId`, `userForFuzzyName`, and `usersForFuzzyName`.
@@ -558,21 +536,13 @@ module.exports = (robot) ->
   robot.respond /who is @?([\w .\-]+)\?*$/i, (msg) ->
     name = msg.match[1].trim()
 
-    users = robot.brain.usersForFuzzyName(name)
-    if users.length is 1
-      user = users[0]
-      # Do something interesting here..
+    robot.brain.usersForFuzzyName(name).then (users) ->
+      if users.length is 1
+        user = users[0]
+        # Do something interesting here..
 
-      msg.send "#{name} is user - #{user}"
+        msg.send "#{name} is user - #{user}"
 ```
-
-## Script Load Order
-
-Scripts are loaded from the `scripts/` directory. They are loaded in alphabetical order, so you can expect a consistent load order of scripts. For example:
-
-* `scripts/1-first.coffee`
-* `scripts/_second.coffee`
-* `scripts/third.coffee`
 
 ## Creating A Script Package
 
@@ -581,20 +551,6 @@ Creating a script package for brobbot is very simple. Start by creating a normal
 `index.js` or `index.coffee`).
 
 In this entry point file you're going to have to export a function that brobbot
-will use to load the scripts in your package. Below is a simple example for
-loading each script in a `./scripts` directory in your package.
-
-```coffeescript
-Fs   = require 'fs'
-Path = require 'path'
-
-module.exports = (robot) ->
-  path = Path.resolve __dirname, 'scripts'
-  Fs.exists path, (exists) ->
-    if exists
-      for file in Fs.readdirSync(path)
-        robot.loadFile path, file
-        robot.parseHelp Path.join(path, file)
-```
+will use to run your script.
 
 After you've built your `npm` package you can publish it to [npmjs](http://npmjs.org).
