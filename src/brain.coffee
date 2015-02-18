@@ -27,12 +27,17 @@ class Brain extends EventEmitter
   #
   # Returns int
   llen: (key) ->
-    Q(@data._private[@key key].length)
+    Q(@data._private[@key key]?.length)
 
   # Public: set the list value at the specified index
   #
   # Returns promise
   lset: (key, index, value) ->
+    key = @key key
+
+    if not @data._private[key]
+      @data._private[key] = []
+
     @data._private[@key key][index] = @serialize value
     Q @
 
@@ -41,11 +46,13 @@ class Brain extends EventEmitter
   # Returns promise
   linsert: (key, placement, pivot, value) ->
     key = @key key
-    if @data._private[key] isnt undefined
-      index = _.find @data._private[key], pivot
+    if @data._private[key] is undefined
+      @data._private[key] = []
 
-      if index
-        @data._private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
+    index = _.find @data._private[key], pivot
+
+    if index
+      @data._private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
 
     Q @
 
@@ -75,19 +82,19 @@ class Brain extends EventEmitter
   #
   # Returns promise for list item
   lpop: (key) ->
-    Q(@deserialize(@data._private[@key key].shift()))
+    Q(@deserialize(@data._private[@key key]?.shift()))
 
   # Public: pop a value off of the right-side of the list
   #
   # Returns promise for list item
   rpop: (key) ->
-    Q(@deserialize(@data._private[@key key].pop()))
+    Q(@deserialize(@data._private[@key key]?.pop()))
 
   # Public: get a list item by index
   #
   # Returns promise for list item
   lindex: (key, index) ->
-    Q(@deserialize(@data._private[@key key][index]))
+    Q(@deserialize(@data._private[@key key]?[index]))
 
   # Public: get an entire list
   #
@@ -102,9 +109,9 @@ class Brain extends EventEmitter
     key = @key key
 
     if end < 0
-      end = @data._private[key].length + end
+      end = @data._private[key]?.length + end
 
-    Q(_.map(@data._private[key].slice(start, end + 1), @deserialize.bind(@)))
+    Q(_.map(@data._private[key]?.slice(start, end + 1), @deserialize.bind(@)))
 
   # Public: remove values from a list
   #
@@ -149,17 +156,17 @@ class Brain extends EventEmitter
   #
   # Returns promise for int
   scard: (key) ->
-    Q @data._private[@key key].length
+    Q @data._private[@key key]?.length
 
   # Public: Get and remove a random member from the set
   #
   # Returns promise for a set member
   spop: (key) ->
     key = @key key
-    index = _.random 0, @data._private[key].length - 1
-    item = @data._private[key][index]
+    index = _.random 0, @data._private[key]?.length - 1
+    item = @data._private[key]?[index]
 
-    @data._private[key].splice(1, index)
+    @data._private[key]?.splice(1, index)
 
     Q item
 
@@ -168,7 +175,7 @@ class Brain extends EventEmitter
   # Returns promise for a set member
   srandmember: (key) ->
     key = @key key
-    Q @data._private[key][_.random 0, @data._private[key].length - 1]
+    Q @data._private[key]?[_.random 0, @data._private[key]?.length - 1]
 
   # Public: Get all the members of the set
   #
@@ -267,13 +274,13 @@ class Brain extends EventEmitter
   #
   # Returns: promise for the value.
   hget: (table, key) ->
-    Q(@deserialize @data._private[@key table][key])
+    Q(@deserialize @data._private[@key table]?[key])
 
   # Public: Delete a field from a hash table
   #
   # Returns promise
   hdel: (table, key) ->
-    delete @data._private[@key table][key]
+    delete @data._private[@key table]?[key]
     Q @
 
   # Public: Get the whole hash table as an object.
@@ -384,7 +391,7 @@ class Brain extends EventEmitter
     matchedUsers = @usersForRawFuzzyName(fuzzyName)
     lowerFuzzyName = fuzzyName.toLowerCase()
     for user in matchedUsers
-      return [user] if user.name.toLowerCase() is lowerFuzzyName
+      return Q([user]) if user.name?.toLowerCase() is lowerFuzzyName
 
     Q(matchedUsers)
 
