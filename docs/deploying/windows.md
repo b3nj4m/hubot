@@ -23,7 +23,7 @@ feel a dirty hack, but it works when you are starting out.
 
 ## Starting, stopping, and restarting brobbot
 
-Every brobbot install has a `bin/brobbot` script to handle starting up the brobbot.
+Every brobbot-instance install has a `./index.sh` script to handle starting up the brobbot.
 You can run this command from your git checkout on the server, but there are some problems you can encounter:
 
 * you disconnect, and brobbot dies

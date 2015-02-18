@@ -8,7 +8,7 @@ Scripts are loaded from external __npm packages__ and specified using the `-s` o
 
 ```bash
 npm install brobbot-quote --save
-bin/brobbot -s quote
+./index.sh -s quote
 ```
 
 ## Anatomy of a script

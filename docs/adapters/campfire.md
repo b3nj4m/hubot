@@ -16,12 +16,12 @@ if you haven't already.
 Brobbot defaults to using its [shell](shell.md), so to use Campfire instead, you
 can run brobbot with `-a campfire`:
 
-    % bin/brobbot -a campfire
+    % ./index.sh -a campfire
 
 If you are deploying to Heroku or using foreman, you need to make
 sure the brobbot is called with `-a campfire` in the `Procfile`:
 
-    web: bin/brobbot -a campfire -n Brobbot
+    web: ./index.sh -a campfire -n Brobbot
 
 ## Configuring
 

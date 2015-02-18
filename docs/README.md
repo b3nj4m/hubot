@@ -5,24 +5,23 @@
 You will need [node.js](http://nodejs.org/) and [npm](https://npmjs.org/). Joyent has
 an [excellent blog post on how to get those installed](http://joyent.com/blog/installing-node-and-npm), so we'll omit those details here.
 
-Once you have node installed, you can clone brobbot using git or download a release package, and install dependencies.
+Once you have node installed, you can clone [brobbot-instance](https://github.com/b3nj4m/brobbot-instance) using git or download a release package, and install dependencies.
 
-    % curl https://codeload.github.com/b3nj4m/hubot/tar.gz/3.5.2 | tar -xz
-    % mv hubot-3.5.2 mybrobbot
-    % cd mybrobbot
+    % curl https://codeload.github.com/b3nj4m/brobbot-instance/tar.gz/1.0.1 | tar -xz
+    % cd brobbot-instance-1.0.1
     % npm install
 
-You now have your own functional brobbot! There's a `bin/brobbot`
-command for convenience, to handle launching your brobbot.
+You now have your own functional brobbot! There's a `index.sh` script
+for your convenience, to handle launching your brobbot.
 
-    % bin/brobbot
+    % ./index.sh
     Brobbot>
 
 This starts brobbot using the [shell adapter](adapters/shell.md), which
 is mostly useful for development. Make note of  `Brobbot>`; this is the name he'll
 `respond` to with commands. For example, to list available commands:
 
-    % bin/brobbot
+    % ./index.sh
     Brobbot> brobbot: help
     brobbot <keyword> tweet - Returns a link to a tweet about <keyword>
     brobbot <user> is a badass guitarist - assign a role to a user
@@ -51,9 +50,9 @@ is mostly useful for development. Make note of  `Brobbot>`; this is the name he'
     brobbot pug me - Receive a pug
     brobbot ship it - Display a motivation squirrel
 
-You almost definitely will want to change his name to give him some more character. bin/brobbot takes a `--name`:
+You almost definitely will want to change his name to give him some more character. ./index.sh takes a `--name`:
 
-    % bin/brobbot --name mybrobbot
+    % ./index.sh --name mybrobbot
     mybrobbot>
 
 Your brobbot will now respond as `mybrobbot`. This is
@@ -74,20 +73,20 @@ There are scripts released as npm packages. If you find one you want to use:
 
 You can specify which scripts to load using the `-s` option (brobbot will prepend `'brobbot-'` for you):
 
-    bin/brobbot -s packagename,packagename2
+    ./index.sh -s packagename,packagename2
 
 ## Adapters
 
 Brobbot uses the adapter pattern to support multiple chat-backends. Read available adapters in [docs/adapters.md](adapters.md), along with how to configure them.
 You can specify which adapter to use with the `-a` option:
 
-    bin/brobbot -a slack
+    ./index.sh -a slack
 
 ## Brains
 
 Brobbot can support multiple brain adapters. See [docs/brains.md](brains.md). You can specify which brain to use with the `-b` option:
 
-    bin/brobbot -b redis
+    ./index.sh -b redis
 
 ## Deploying
 

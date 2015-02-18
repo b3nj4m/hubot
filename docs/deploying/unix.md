@@ -32,19 +32,19 @@ deployments.
 
 ## Starting, stopping, and restarting brobbot
 
-Every brobbot install has a `bin/brobbot` script to handle starting up the brobbot.
+Every brobbot-instance install has a `./index.sh` script to handle starting up the brobbot.
 You can run this command from your git checkout on the server, but there are some problems you can encounter:
 
 * you disconnect, and brobbot dies
 * brobbot dies, for any reason, and doesn't start again
 * it doesn't start up at boot automatically
 
-For handling you disconnecting, you can start with running `bin/brobbot` in
+For handling you disconnecting, you can start with running `./index.sh` in
 [screen session](http://www.gnu.org/software/screen/) or with
 [nohup](http://linux.die.net/man/1/nohup).
 
 For handling brobbot dying, and restarting it automatically, you can imagine
-running `bin/brobbot` in a
+running `./index.sh` in a
 [bash while loop](http://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO-7.html#ss7.3). But
 really, you probably want some process monitoring using tools like
 [monit](http://mmonit.com/monit/),

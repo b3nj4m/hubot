@@ -5,10 +5,10 @@ It can be useful for testing scripts before using them on a live brobbot.
 
 ## Getting Started
 
-To use the shell adapter you can simply omit the `-a` option when running
+To use the shell adapter you can simply omit the `-a` option when invoking your
 brobbot as it will use the shell adapter by default.
 
-    % bin/brobbot
+    % ./index.sh
 
 ## Configuring
 
