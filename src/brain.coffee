@@ -188,7 +188,7 @@ class Brain extends EventEmitter
   # Returns promise for array
   keys: (searchKey = '') ->
     searchKey = @key searchKey
-    Q(_.map(_.filter(_.keys(@data._private), (key) -> key.indexOf searchKey is 0), @unkey.bind(@)))
+    Q(_.map(_.filter(_.keys(@data._private), (key) -> key.indexOf(searchKey) is 0), @unkey.bind(@)))
 
   # Public: transform a key from internal brain key, to user-facing key
   #
@@ -366,8 +366,8 @@ class Brain extends EventEmitter
     result = null
     lowerName = name.toLowerCase()
     for k of (@data.users or { })
-      userName = @data.users[k]['name']
-      if userName? and userName.toString().toLowerCase() is lowerName
+      userName = @data.users[k].name
+      if userName and userName.toString().toLowerCase() is lowerName
         result = @data.users[k]
     Q(result)
 
@@ -378,9 +378,12 @@ class Brain extends EventEmitter
   # Returns promise an Array of User instances matching the fuzzy name.
   usersForRawFuzzyName: (fuzzyName) ->
     lowerFuzzyName = fuzzyName.toLowerCase()
-    Q(user) for key, user of (@data.users or {}) when (
-      user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) is 0
-    )
+    results = []
+    for key, user of (@data.users or {})
+      if user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) is 0
+        results.push user
+
+    Q(results)
 
   # Public: If fuzzyName is an exact match for a user, returns an array with
   # just that user. Otherwise, returns an array of all users for which
@@ -388,12 +391,12 @@ class Brain extends EventEmitter
   #
   # Returns promise an Array of User instances matching the fuzzy name.
   usersForFuzzyName: (fuzzyName) ->
-    matchedUsers = @usersForRawFuzzyName(fuzzyName)
-    lowerFuzzyName = fuzzyName.toLowerCase()
-    for user in matchedUsers
-      return Q([user]) if user.name?.toLowerCase() is lowerFuzzyName
+    @usersForRawFuzzyName(fuzzyName).then (matchedUsers) ->
+      lowerFuzzyName = fuzzyName.toLowerCase()
+      for user in matchedUsers
+        return Q([user]) if user.name?.toLowerCase() is lowerFuzzyName
 
-    Q(matchedUsers)
+      Q(matchedUsers)
 
   # Public: Return a brain segment bound to the given key-prefix.
   #
