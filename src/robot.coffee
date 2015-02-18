@@ -324,49 +324,13 @@ class Robot
   #
   # Returns an Array of help commands for running scripts.
   helpCommands: ->
-    @commands.sort()
+    commands = _.map @commands, (command) ->
+      command.command + ' - ' + command.description
+    commands.sort()
 
-  # Private: load help info from a loaded script.
-  #
-  # path - A String path to the file on disk.
-  #
-  # Returns nothing.
-  #TODO this is lame, provide programmatic api for help or JSON file?
-  parseHelp: (path) ->
-    @logger.debug "Parsing help for #{path}"
-    scriptName = Path.basename(path).replace /\.(coffee|js)$/, ''
-    scriptDocumentation = {}
-
-    body = Fs.readFileSync path, 'utf-8'
-
-    currentSection = null
-    for line in body.split "\n"
-      break unless line[0] is '#' or line.substr(0, 2) is '//'
-
-      cleanedLine = line.replace(/^(#|\/\/)\s?/, "").trim()
-
-      continue if cleanedLine.length is 0
-      continue if cleanedLine.toLowerCase() is 'none'
-
-      nextSection = cleanedLine.toLowerCase().replace(':', '')
-      if nextSection in BROBBOT_DOCUMENTATION_SECTIONS
-        currentSection = nextSection
-        scriptDocumentation[currentSection] = []
-      else
-        if currentSection
-          scriptDocumentation[currentSection].push cleanedLine.trim()
-          if currentSection is 'commands'
-            @commands.push cleanedLine.trim()
-
-    if currentSection is null
-      @logger.info "#{path} is using deprecated documentation syntax"
-      scriptDocumentation.commands = []
-      for line in body.split("\n")
-        break    if not (line[0] is '#' or line.substr(0, 2) is '//')
-        continue if not line.match('-')
-        cleanedLine = line[2..line.length].replace(/^brobbot/i, @name).trim()
-        scriptDocumentation.commands.push cleanedLine
-        @commands.push cleanedLine
+  # Public: add a help command
+  helpCommand: (command, description) ->
+    @commands.push command: command, description: description
 
   # Public: A helper send function which delegates to the adapter's send
   # function.
@@ -423,6 +387,7 @@ class Robot
   #
   # Returns nothing.
   run: ->
+    require('./scripts/help') @
     @emit "running"
     @adapter.run()
 

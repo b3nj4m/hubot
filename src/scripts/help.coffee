@@ -1,10 +1,6 @@
 # Description:
 #   Generates help commands for Brobbot.
 #
-# Commands:
-#   brobbot help - Displays all of the help commands that Brobbot knows about.
-#   brobbot help <query> - Displays all help commands that match <query>.
-#
 # URLS:
 #   /brobbot/help
 #
@@ -53,6 +49,9 @@ helpContents = (name, commands) ->
   """
 
 module.exports = (robot) ->
+  robot.helpCommand 'brobbot help', 'Displays all of the help commands that Brobbot knows about.'
+  robot.helpCommand 'brobbot help <query>', 'Displays all help commands that match <query>.'
+
   robot.respond /^help\s*(.*)$/i, (msg) ->
     cmds = robot.helpCommands()
     filter = msg.match[1]
