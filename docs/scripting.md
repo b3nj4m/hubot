@@ -4,36 +4,17 @@ Brobbot out of the box doesn't do too much, but it is an extensible, scriptable 
 
 ## Anatomy of script loading
 
-There is one main source to load scripts from:
+Scripts are loaded from external __npm packages__ and specified using the `-s` option:
 
-* scripts loaded from external __npm packages__ and specified in `external-scripts.json`
-
-### NPM Packages
-
-Another way is to install scripts via an npm package (you can check some of them [here](https://npmjs.org/search?q=brobbot)).
-
-To load those scripts to your brobbot installation, you need to place them in the `external-scripts.json` file after adding the required npm packages to the `package.json` dependency section.
-
-Here is an example of adding the [brobbot-botriot](https://npmjs.org/package/brobbot-quote) npm package:
-
-```json
-{
- ...
-
-  "dependencies": {
-    "brobbot":         "3.x",
-    "brobbot-quote": "3.x"
-  },
-
-...
-}
+```bash
+npm install brobbot-quote --save
+bin/brobbot -s quote
 ```
 
 ## Anatomy of a script
 
-When you created your brobbot, the generator also created a `scripts` directory. If you peek around there, you will see some examples of scripts. For a script to be a script, it needs to:
+For a script to be a script, it needs to:
 
-* live under the root directory of the brobbot instance
 * be a `.coffee` or `.js` file
 * export a function
 
@@ -319,20 +300,7 @@ module.exports = (robot) ->
     msg.send "#{answer}, but what is the question?"
 ```
 
-## Dependencies
-
-Brobbot uses [npm](https://github.com/isaacs/npm) to manage its dependencies. To additional packages, add them to `dependencies` in `package.json`. For example, to add lolimadeupthispackage 1.2.3, it'd look like:
-
-```json
-  "dependencies": {
-    "brobbot":         "3.x",
-    "lolimadeupthispackage": "1.2.3"
-  },
-```
-
-If you are using scripts from brobbot-scripts, take note of the `Dependencies` documentation in the script to add. They are listed in a format that can be copy & pasted into `package.json`, just make sure to add commas as necessary to make it valid JSON.
-
-# Timeouts and Intervals
+## Timeouts and Intervals
 
 Brobbot can run code later using JavaScript's built-in [setTimeout](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). It takes a callback method, and the amount of time to wait before calling it:
 
@@ -484,10 +452,6 @@ Brobbot scripts can be documented with comments at the top of their file, for ex
 # Configuration:
 #   LIST_OF_ENV_VARS_TO_SET
 #
-# Commands:
-#   brobbot <trigger> - <what the respond trigger does>
-#   <trigger> - <what the hear trigger does>
-#
 # Notes:
 #   <optional notes required for the script>
 #
@@ -495,18 +459,20 @@ Brobbot scripts can be documented with comments at the top of their file, for ex
 #   <github username of the original script author>
 ```
 
-The most important and user facing of these is `Commands`. At load time, Brobbot looks at the `Commands` section of each scripts, and build a list of all commands. The included `help.coffee` lets a user ask for help across all commands, or with a search. Therefore, documenting the commands make them a lot more discoverable by users.
+## Help Commands
+
+Define a command to be shown in the `brobbot help` output (`'brobbot'` will be replaced with the actual name of your robot):
+
+```coffeescript
+robot.helpCommand 'brobbot <trigger>', '<what the respond trigger does>'
+robot.helpCommand '<trigger>', '<what the hear trigger does>'
+```
 
 When documenting commands, here are some best practices:
 
-* Stay on one line. Help commands get sorted, so would insert the second line at an unexpected location, where it probably won't make sense.
 * Refer to the Brobbot as brobbot, even if your brobbot is named something else. It will automatically be replaced with the correct name. This makes it easier to share scripts without having to update docs.
 * For `robot.respond` documentation, always prefix with `brobbot`. Brobbot will automatically replace this with your robot's name, or the robot's alias if it has one
 * Check out how man pages document themselves. In particular, brackets indicate optional parts, '...' for any number of arguments, etc.
-
-The other sections are more relevant to developers of the bot, particularly dependencies, configuration variables, and notes.
-
-
 
 ## Persistence
 
@@ -524,7 +490,7 @@ robot.respond /have a soda/i, (msg) ->
 
     robot.brain.set 'totalSodas', sodasHad+1
 robot.respond /sleep it off/i, (msg) ->
-  robot.brain.set('totalSodas', 0).then () ->
+  robot.brain.set('totalSodas', 0).then ->
     robot.respond 'zzzzz'
 ```
 
@@ -543,14 +509,3 @@ module.exports = (robot) ->
 
         msg.send "#{name} is user - #{user}"
 ```
-
-## Creating A Script Package
-
-Creating a script package for brobbot is very simple. Start by creating a normal
-`npm` package. Make sure you add a main file for the entry point (e.g.
-`index.js` or `index.coffee`).
-
-In this entry point file you're going to have to export a function that brobbot
-will use to run your script.
-
-After you've built your `npm` package you can publish it to [npmjs](http://npmjs.org).
