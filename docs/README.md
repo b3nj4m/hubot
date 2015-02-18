@@ -5,13 +5,15 @@
 You will need [node.js](http://nodejs.org/) and [npm](https://npmjs.org/). Joyent has
 an [excellent blog post on how to get those installed](http://joyent.com/blog/installing-node-and-npm), so we'll omit those details here.
 
-Once you have node installed, you can clone brobbot using git.
+Once you have node installed, you can clone brobbot using git or download a release package, and install dependencies.
 
-    % git clone git@github.com:b3nj4m/hubot mybrobbot
+    % curl https://codeload.github.com/b3nj4m/hubot/tar.gz/3.5.2 | tar -xz
+    % mv hubot-3.5.2 mybrobbot
+    % cd mybrobbot
+    % npm install
 
 You now have your own functional brobbot! There's a `bin/brobbot`
-command for convenience, to handle installing npm dependencies, loading scripts,
-and then launching your brobbot.
+command for convenience, to handle launching your brobbot.
 
     % bin/brobbot
     Brobbot>
@@ -68,15 +70,24 @@ Brobbot's power comes through scripting. Read [docs/scripting.md](scripting.md) 
 
 There are scripts released as npm packages. If you find one you want to use:
 
-1. Add the package to the list of `dependencies` into your `package.json`
-2. `npm install` to make sure its installed
+    npm install brobbot-packagename --save
 
-To enable third-party scripts that you've added you will need to add the package
-name as a double quoted string to the `external-scripts.json` file in this repo.
+You can specify which scripts to load using the `-s` option (brobbot will prepend `'brobbot-'` for you):
+
+    bin/brobbot -s packagename,packagename2
 
 ## Adapters
 
 Brobbot uses the adapter pattern to support multiple chat-backends. Read available adapters in [docs/adapters.md](adapters.md), along with how to configure them.
+You can specify which adapter to use with the `-a` option:
+
+    bin/brobbot -a slack
+
+## Brains
+
+Brobbot can support multiple brain adapters. See [docs/brains.md](brains.md). You can specify which brain to use with the `-b` option:
+
+    bin/brobbot -b redis
 
 ## Deploying
 

@@ -12,12 +12,12 @@ Path     = require 'path'
 Switches = [
   [ "-b", "--brain BRAIN",     "The Brain to use" ],
   [ "-a", "--adapter ADAPTER", "The Adapter to use" ],
+  [ "-s", "--scripts SCRIPTS", "comma-separated list of scripts to load"],
   [ "-c", "--create PATH",     "Create a deployable brobbot" ],
   [ "-d", "--disable-httpd",   "Disable the HTTP server" ],
   [ "-h", "--help",            "Display the help information" ],
   [ "-l", "--alias ALIAS",     "Enable replacing the robot's name with alias" ],
   [ "-n", "--name NAME",       "The name of the robot in chat" ],
-  [ "-r", "--require PATH",    "Alternative scripts path" ],
   [ "-t", "--config-check",    "Test brobbot's config to make sure it won't fail at startup"]
   [ "-v", "--version",         "Displays the version of brobbot installed" ]
 ]
@@ -28,10 +28,15 @@ Options =
   alias:       process.env.BROBBOT_ALIAS   or false
   create:      process.env.BROBBOT_CREATE  or false
   enableHttpd: process.env.BROBBOT_HTTPD   or true
-  scripts:     process.env.BROBBOT_SCRIPTS or []
+  scripts:     process.env.BROBBOT_SCRIPTS or ""
   name:        process.env.BROBBOT_NAME    or "Brobbot"
   path:        process.env.BROBBOT_PATH    or "."
   configCheck: false
+
+if Options.scripts
+  Options.scripts = Options.scripts.split(',')
+else
+  Options.scripts = []
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage brobbot [options]"
@@ -60,8 +65,8 @@ Parser.on "alias", (opt, value) ->
 Parser.on "name", (opt, value) ->
   Options.name = value
 
-Parser.on "require", (opt, value) ->
-  Options.scripts.push(value)
+Parser.on "scripts", (opt, value) ->
+  Options.scripts = Options.scripts.concat value.split(',')
 
 Parser.on "config-check", (opt) ->
   Options.configCheck = true
@@ -75,71 +80,15 @@ unless process.platform is "win32"
   process.on 'SIGTERM', ->
     process.exit 0
 
-if Options.create
-  console.error "'brobbot --create' is deprecated. Use the yeoman generator instead:"
-  console.error "    npm install -g yo generator-brobbot"
-  console.error "    mkdir -p #{Options.path}"
-  console.error "    yo brobbot"
-  console.error "See https://github.com/github/brobbot/blob/master/docs/README.md for more details on getting started."
-  process.exit 1
+adapterPath = Path.join __dirname, "..", "src", "adapters"
+brainPath = Path.join __dirname, "..", "src", "brains"
 
-else
-  adapterPath = Path.join __dirname, "..", "src", "adapters"
-  brainPath = Path.join __dirname, "..", "src", "brains"
+if Options.version
+  console.log require('./package.json').version
+  process.exit 0
 
-  robot = Brobbot.loadBot adapterPath, Options.adapter, brainPath, Options.brain, Options.enableHttpd, Options.name
+robot = Brobbot.loadBot Options.scripts, adapterPath, Options.adapter, brainPath, Options.brain, Options.enableHttpd, Options.name
 
-  if Options.version
-    console.log robot.version
-    process.exit 0
+robot.alias = Options.alias
 
-  robot.alias = Options.alias
-
-  loadScripts = ->
-    loadingScripts = []
-
-    scriptsPath = Path.resolve ".", "scripts"
-    loadingScripts.push(robot.load scriptsPath)
-
-    scriptsPath = Path.resolve ".", "src", "scripts"
-    loadingScripts.push(robot.load scriptsPath)
-
-    brobbotScripts = Path.resolve ".", "brobbot-scripts.json"
-    if Fs.existsSync(brobbotScripts)
-      data = Fs.readFileSync(brobbotScripts)
-      if data.length > 0
-        try
-          scripts = JSON.parse data
-          scriptsPath = Path.resolve "node_modules", "brobbot-scripts", "src", "scripts"
-          loadingScripts.push(robot.loadBrobbotScripts(scriptsPath, scripts))
-        catch err
-          console.error "Error parsing JSON data from brobbot-scripts.json: #{err}"
-          process.exit(1)
-
-    externalScripts = Path.resolve ".", "external-scripts.json"
-    if Fs.existsSync(externalScripts)
-      Fs.readFile externalScripts, (err, data) ->
-        if data.length > 0
-          try
-            scripts = JSON.parse data
-          catch err
-            console.error "Error parsing JSON data from external-scripts.json: #{err}"
-            process.exit(1)
-          loadingScripts.push(robot.loadExternalScripts scripts)
-
-    for path in Options.scripts
-      if path[0] == '/'
-        scriptsPath = path
-      else
-        scriptsPath = Path.resolve ".", path
-      loadingScripts.push(robot.load scriptsPath)
-
-    Q.all(loadingScripts)
-
-  if Options.configCheck
-    loadScripts().then ->
-      console.log "OK"
-      process.exit 0
-
-  robot.ready.then ->
-    loadScripts().then(robot.run.bind(robot))
+robot.ready.then -> robot.run()

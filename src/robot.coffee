@@ -38,6 +38,7 @@ class Robot
   # Robots receive messages from a chat source (Campfire, irc, etc), and
   # dispatch them to matching listeners.
   #
+  # scripts     - An array of modules to load
   # adapterPath - A String of the path to local adapters.
   # adapter     - A String of the adapter name.
   # brainPath - A String of the path to local brains.
@@ -46,7 +47,7 @@ class Robot
   # name        - A String of the robot name, defaults to Brobbot.
   #
   # Returns nothing.
-  constructor: (adapterPath, adapter, brainPath, brain, httpd, name = 'Brobbot') ->
+  constructor: (scripts, adapterPath, adapter, brainPath, brain, httpd, name = 'Brobbot') ->
     @name      = name
     @nameRegex = new RegExp "^\\s*#{name}:?\\s+", 'i'
     @events    = new EventEmitter
@@ -67,10 +68,10 @@ class Robot
       @setupNullRouter()
 
     @brainReady = @loadBrain brainPath, brain
+    @scriptsReady = @loadScripts scripts
     @adapterReady = @loadAdapter adapterPath, adapter
 
-    #TODO
-    @ready = @brainReady
+    @ready = Q.all [@brainReady, @scriptsReady]
     @connected = @adapterReady
 
     @adapterName = adapter
@@ -223,70 +224,10 @@ class Robot
       if message not instanceof CatchAllMessage and not matched
         @receive new CatchAllMessage(message)
 
-  # Public: Loads a file in path.
-  #
-  # path - A String path on the filesystem.
-  # file - A String filename in path on the filesystem.
-  #
-  # Returns nothing.
-  loadFile: (path, file) ->
-    ext  = Path.extname file
-    full = Path.join path, Path.basename(file, ext)
-
-    if require.extensions[ext]
-      try
-        require(full) @segment(full)
-        @parseHelp Path.join(path, file)
-      catch error
-        @logger.error "Unable to load #{full}: #{error.stack}"
-        process.exit(1)
-
-  # Public: Loads every script in the given path.
-  #
-  # path - A String path on the filesystem.
-  #
-  # Returns nothing.
-  load: (path) ->
-    @ready.then =>
-      @logger.debug "Loading scripts from #{path}"
-
-      if Fs.existsSync(path)
-        Fs.readdirSync(path).sort().forEach (file) =>
-          @loadFile path, file
-
-  # Public: Load scripts specfied in the `brobbot-scripts.json` file.
-  #
-  # path    - A String path to the brobbot-scripts files.
-  # scripts - An Array of scripts to load.
-  #
-  # Returns promise.
-  loadBrobbotScripts: (path, scripts) ->
-    @ready.then =>
-      @logger.debug "Loading brobbot-scripts from #{path}"
-
-      scripts.forEach (script) =>
-        @loadFile path, script
-
-  # Public: Load scripts from packages specfied in the
-  # `external-scripts.json` file.
-  #
-  # packages - An Array of packages containing brobbot scripts to load.
-  #
-  # Returns promise.
-  loadExternalScripts: (packages) ->
-    @ready.then =>
-      @logger.debug "Loading external-scripts from npm packages"
-      try
-        if packages instanceof Array
-          for pkg in packages
-            require(pkg) @segment(pkg)
-        else
-          for pkg, scripts of packages
-            #TODO brain segment for each script appropriate?
-            require(pkg) @segment("#{pkg}"), scripts
-      catch err
-        @logger.error "Error loading scripts from npm package - #{err.stack}"
-        process.exit(1)
+  loadScripts: (scripts) ->
+    @brainReady.then =>
+      Q.all _.map scripts, (script) =>
+        Q(require("brobbot-#{script}")(@segment(script)))
 
   # Setup the Express server's defaults.
   #
