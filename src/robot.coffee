@@ -183,7 +183,7 @@ class Robot
     else
       @aliasRegex = false
 
-    @nameRegex.test message.text or (@aliasRegex and @aliasRegex.test message.text)
+    @nameRegex.test(message.text) or (@aliasRegex and @aliasRegex.test(message.text))
 
   # Public: Passes the given message to any interested Listeners.
   #
