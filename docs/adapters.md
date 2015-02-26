@@ -43,6 +43,8 @@ This is where you receive messages from the chat service and do any transforming
 }
 ```
 
+When you finish transforming, you should call `robot.receive(msg)`.
+
 ### send(envelope, messages...)
 
 This is where you take messages from brobbot and send them off to the chat service.
