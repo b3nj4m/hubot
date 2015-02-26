@@ -253,7 +253,7 @@ class Brain extends EventEmitter
   #
   # Returns promise for array.
   hvals: (table) ->
-    Q(_.mapValues(@data._private[@key table] or {}, @deserialize.bind(@)))
+    Q(_.map(@data._private[@key table] or {}, @deserialize.bind(@)))
 
   # Public: get the size of the hash table.
   #
