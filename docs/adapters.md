@@ -14,7 +14,7 @@ Third-party adapters are available as `npm` packages. Here is a list of known
 adapters, but please [submit an issue](https://github.com/b3nj4m/hubot/issues)
 to have yours added to the list:
 
-* [Slack](https://github.com/b3nj4m/brobbot-slack)
+* [Slack](https://github.com/b3nj4m/hubot-slack)
 
 ## Writing Your Own adapter
 
