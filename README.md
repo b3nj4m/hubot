@@ -27,6 +27,10 @@ To load a brain module, use the `-b` switch when running `bin/brobbot`. e.g.
 bin/brobbot -b redis
 ```
 
+#### Scripts are npm packages
+
+Brobbot expects script packages to be loadable via `require()`, and to export a function. This is unlike Hubot, which dictates a particular directory structure, and expects to be able to access your script files directly via `fs`.
+
 #### Message queues
 
 Brobbot maintains a message queue for each message handler, which means your handler can opt to process one message at a time with no concurrency.
