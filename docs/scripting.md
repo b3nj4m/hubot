@@ -163,15 +163,13 @@ A post looks like:
   robot.http("https://midnight-train")
     .get()(function(err, res, body) {
       //pretend there's error checking code here
-
       if (res.statusCode !== 200) {
         msg.send("Request didn't come back HTTP 200 :(");
         return;
       }
 
       var rateLimitRemaining = res.getHeader('X-RateLimit-Limit');
-      rateLimitRemaining = rateLimitRemaining ? parseInt(rateLimitRemaining) : rateLimitRemaining;
-      if (rateLimitRemaining && rateLimitRemaining < 1) {
+      if (typeof rateLimitRemaining !== 'undefined' && parseInt(rateLimitRemaining) < 1) {
         msg.send("Rate Limit hit, stop believing for awhile");
       }
 
@@ -185,7 +183,6 @@ A post looks like:
   robot.http("https://midnight-train")
     .get()(function(err, res, body) {
       //error checking code here
-
       msg.send("Got back " + body);
     });
 ```
@@ -199,7 +196,6 @@ If you are talking to APIs, the easiest way is going to be JSON because it doesn
     .header('Accept', 'application/json')
     .get()(function(err, res, body) {
       //error checking code here
-
       var data = JSON.parse(body);
       msg.send(data.passenger + " taking midnight train going " + data.destination);
     });
@@ -212,7 +208,6 @@ It's possible to get non-JSON back, like if the API hit an error and it tries to
     .header('Accept', 'application/json')
     .get()(function(err, res, body) {
       //err & response status checking code here
-
       if (response.getHeader('Content-Type') !== 'application/json') {
         msg.send("Didn't get back JSON :(");
         return;
@@ -226,7 +221,6 @@ It's possible to get non-JSON back, like if the API hit an error and it tries to
         msg.send("Ran into an error parsing JSON :(");
         return;
       }
-
       //your code here
     });
 ```
@@ -252,7 +246,6 @@ A common pattern is to hear or respond to commands, and send with a random funny
 
 ```javascript
 var lulz = ['lol', 'rofl', 'lmao'];
-
 msg.send(msg.random(lulz));
 ```
 
@@ -419,7 +412,6 @@ module.exports = function(robot) {
     var secret = data.secret;
 
     robot.messageRoom(room, "I have a secret: " + secret);
-
     res.send('OK');
   });
 };
@@ -489,7 +481,6 @@ Using previous examples:
     catch (err) {
       robot.emit('error', error);
     }
-
     //rest of the code here
   });
 
@@ -582,7 +573,6 @@ module.exports = function(robot) {
       if (users.length === 1) {
         var user = users[0];
         //Do something interesting here..
-
         msg.send(name + " is user - " + user);
       }
     });
