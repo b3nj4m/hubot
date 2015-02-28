@@ -9,7 +9,7 @@ Scripts are loaded from external __npm packages__ and specified using the `-s` o
 ```bash
 npm install brobbot-quote --save
 ./index.sh -s quote
-```
+```iss
 
 Your `package.json` should specify `brobbot` as a peer-dependency, not a regular dependency. It should also specify a `main` file, which exports a function:
 
@@ -91,7 +91,7 @@ module.exports = function(robot) {
 
 The `robot.hear(/badgers/)` callback sends a message exactly as specified regardless of who said it, "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS".
 
-The `msg` object has an attribute, `isAddressedToBrobbot`, which you can use to differentiate messages addressed to brobbot from those that aren't.
+The `msg.message` object has an property, `isAddressedToBrobbot`, which you can use to differentiate messages addressed to brobbot from those that aren't.
 
 If a user Dave says "HAL: open the pod bay doors", `robot.respond(/^open the pod bay doors/i)` callback sends a message "Dave: I'm afraid I can't let you do that."
 
