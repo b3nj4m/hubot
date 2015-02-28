@@ -5,36 +5,42 @@ If you've been following along with [Getting Started](../README.md), it's time t
 
 Install the [Heroku Toolbelt](https://toolbelt.heroku.com/) to start, then follow their 'Getting Started' instructions, including logging in the first time:
 
-    % heroku login
-    Enter your Heroku credentials.
-    Email: youremail@example.com
-    Password:
-    Could not find an existing public key.
-    Would you like to generate one? [Yn]
-    Generating new SSH public key.
-    Uploading ssh public key /Users/you/.ssh/id_rsa.pub
+```bash
+% heroku login
+Enter your Heroku credentials.
+Email: youremail@example.com
+Password:
+Could not find an existing public key.
+Would you like to generate one? [Yn]
+Generating new SSH public key.
+Uploading ssh public key /Users/you/.ssh/id_rsa.pub
+```
 
-Inside your new brobbot directory, make sure you've created a git repository, and that your work is committed:
+Inside your new [brobbot-instance](https://github.com/b3nj4m/brobbot-instance) directory, make sure you've created a git repository, and that your work is committed:
 
-    % git init
-    % git add .
-    % git commit -m "Initial commit"
+```bash
+% git init
+% git add .
+% git commit -m "Initial commit"
+```
 
 Then create a Heroku application:
 
-    % heroku create
-    Creating rosemary-britches-123... done, stack is cedar
-    http://rosemary-britches-123.herokuapp.com/ | git@heroku.com:rosemary-britches-123.git
-    Git remote heroku added
+```bash
+% heroku create
+Creating rosemary-britches-123... done, stack is cedar
+http://rosemary-britches-123.herokuapp.com/ | git@heroku.com:rosemary-britches-123.git
+Git remote heroku added
+```
 
 Before you deploy the application, you'll need to configure some environment
 variables for brobbot to use. The specific variables you'll need depends on which
-[adapter](../adapters.md) and scripts you are using. For Campfire, with no other
+[adapter](../adapters.md) and scripts you are using. For Slack, with no other
 scripts, you'd need to set the following environment variables:
 
-    % heroku config:set BROBBOT_CAMPFIRE_ACCOUNT=yourcampfireaccount
-    % heroku config:set BROBBOT_CAMPFIRE_TOKEN=yourcampfiretoken
-    % heroku config:set BROBBOT_CAMPFIRE_ROOMS=comma,separated,list,of,rooms,to,join
+```bash
+% heroku config:set BROBBOT_SLACK_TOKEN=your-slack-token
+```
 
 In addition, there is one special environment variable for Heroku. The default brobbot
 [Procfile](https://devcenter.heroku.com/articles/procfile) marks the process as
@@ -47,25 +53,35 @@ there's a special environment variable to make brobbot regularly ping itself ove
 the app is deployed to http://rosemary-britches-123.herokuapp.com/, you'd
 configure:
 
-    % heroku config:set HEROKU_URL=http://rosemary-britches-123.herokuapp.com
+```bash
+% heroku config:set HEROKU_URL=http://rosemary-britches-123.herokuapp.com
+```
 
 At this point, you are ready to deploy and start chatting. With Heroku, that's a
 git push away:
 
-    % git push heroku master
+```bash
+% git push heroku master
+```
 
 You'll see some text flying, and eventually some success. You should be able to
 see your bot in your configured chat rooms at this point. If not, you can peek
 at the logs to try to debug:
 
-    % heroku logs
+```bash
+% heroku logs
+```
 
 If you make any changes to your brobbot, just commit and push them as
 before:
 
-    % git commit -am "Awesome scripts OMG"
-    % git push heroku master
+```bash
+% git commit -am "Awesome scripts OMG"
+% git push heroku master
+```
 
-Some scripts needs Redis to work, Heroku offers an addon called [Redis Cloud](https://addons.heroku.com/rediscloud), which has a free plan. To use it:
+Some scripts needs Redis to work, Heroku offers an addon called [Redis To-Go](https://addons.heroku.com/redistogo), which has a free plan. To use it:
 
-    % heroku addons:add rediscloud
+```bash
+% heroku addons:add redistogo:nano
+```
