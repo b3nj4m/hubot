@@ -21,10 +21,10 @@ Each module gets its own keyspace within the brain, so modules don't have to wor
 Brain modules can also provide a `ready` promise in order to signal that the brain is connected/authenticated/whatever it needs to do before it's ready.
 Check out [the brain docs](docs/brains.md) for more info.
 
-To load a brain module, use the `-b` switch when running `bin/brobbot`. e.g.
+To load a brain module, use the `-b` switch when running `./index.sh` in your [brobbot-instance](https://npmjs.org/package/brobbot-instance). e.g.
 
 ```bash
-bin/brobbot -b redis
+./index.sh -b redis
 ```
 
 #### Scripts are npm packages
