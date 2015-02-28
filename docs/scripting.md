@@ -2,7 +2,7 @@
 
 Brobbot out of the box doesn't do too much, but it is an extensible, scriptable robot friend.
 
-## Anatomy of script loading
+## Anatomy of a script
 
 Scripts are loaded from external __npm packages__ and specified using the `-s` option:
 
@@ -11,30 +11,24 @@ npm install brobbot-quote --save
 ./index.sh -s quote
 ```
 
-Your package should specify `brobbot` as a peer-dependency, not a regular dependency:
+Your `package.json` should specify `brobbot` as a peer-dependency, not a regular dependency. It should also specify a `main` file, which exports a function:
 
+#### package.json
 ```json
 {
   "name": "brobbot-quote",
-  ...
+  "main": "index.js",
   "peerDependecies": {
     "brobbot": "4.x"
   }
+  ...
 }
 ```
-
-## Anatomy of a script
-
-For a script to be a script, it needs to:
-
-* be a `.coffee` or `.js` file
-* export a function
-
-By export a function, we just mean:
-
-```coffeescript
-module.exports = (robot) ->
-  # your code here
+#### index.js
+```javascript
+module.exports = function (robot) {
+  //your code here
+};
 ```
 
 The `robot` parameter is an instance of your robot friend. At this point, we can start scripting up some awesomeness.
@@ -43,22 +37,25 @@ The `robot` parameter is an instance of your robot friend. At this point, we can
 
 Since this is a chat bot, the most common interactions are based on messages. Brobbot can `hear` messages said in a room or `respond` to messages directly addressed at it. Both methods take a regular expression and a callback function as parameters. For example:
 
-```coffeescript
-module.exports = (robot) ->
-  robot.hear /badger/i, (msg) ->
-    # your code here
+```javascript
+module.exports = function(robot) {
+  robot.hear(/badger/i, function(msg) {
+    //your code here
+  });
 
-  robot.respond /open the pod bay doors/i, (msg) ->
-    # your code here
+  robot.respond(/^open the pod bay doors/i, function(msg) {
+    //your code here
+  });
+};
 ```
 
-The `robot.hear /badger/` callback is called anytime a message's text matches. For example:
+The `robot.hear(/badger/)` callback is called anytime a message's text matches. For example:
 
 * Stop badgering the witness
 * badger me
 * what exactly is a badger anyways
 
-The `robot.respond /open the pod bay doors/i` callback is only called for messages that are immediately preceded by the robot's name or alias. If the robot's name is HAL and alias is /, then this callback would be triggered for:
+The `robot.respond(/^open the pod bay doors/i)` callback is only called for messages that are immediately preceded by the robot's name or alias. If the robot's name is HAL and alias is /, then this callback would be triggered for:
 
 *  hal open the pod bay doors
 * HAL: open the pod bay doors
@@ -76,42 +73,50 @@ It wouldn't be called for:
 
 The `msg` parameter is, despite the name, an instance of [Response](../src/response.coffee). With it, you can `send` a message back to the room the `msg` came from, `emote` a message to a room (If the given adapter supports it), or `reply` to the person that sent the message. For example:
 
-```coffeescript
-module.exports = (robot) ->
-  robot.hear /badger/i, (msg) ->
-    msg.send "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS"
+```javascript
+module.exports = function(robot) {
+  robot.hear(/badger/i, function(msg) {
+    msg.send("Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS");
+  });
 
-  robot.respond /open the pod bay doors/i, (msg) ->
-    msg.reply "I'm afraid I can't let you do that."
+  robot.respond(/^open the pod bay doors/i, function(msg) {
+    msg.reply("I'm afraid I can't let you do that.");
+  });
 
-  robot.hear /I like pie/i, (msg) ->
-    msg.emote "makes a freshly baked pie"
+  robot.hear(/I like pie/i, function(msg) {
+    msg.emote("makes a freshly baked pie");
+  });
+};
 ```
 
-The `robot.hear /badgers/` callback sends a message exactly as specified regardless of who said it, "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS".
+The `robot.hear(/badgers/)` callback sends a message exactly as specified regardless of who said it, "Badgers? BADGERS? WE DON'T NEED NO STINKIN BADGERS".
 
 The `msg` object has an attribute, `isAddressedToBrobbot`, which you can use to differentiate messages addressed to brobbot from those that aren't.
 
-If a user Dave says "HAL: open the pod bay doors", `robot.respond /open the pod bay doors/i` callback sends a message "Dave: I'm afraid I can't let you do that."
+If a user Dave says "HAL: open the pod bay doors", `robot.respond(/^open the pod bay doors/i)` callback sends a message "Dave: I'm afraid I can't let you do that."
 
 ## Capturing data
 
 So far, our scripts have had static responses, which while amusing, are boring functionality-wise. `msg.match` has the result of `match`ing the incoming message against the regular expression. This is just a [JavaScript thing](http://www.w3schools.com/jsref/jsref_match.asp), which ends up being an array with index 0 being the full text matching the expression. If you include capture groups, those will be populated `msg.match`. For example, if we update a script like:
 
-```coffeescript
-  robot.respond /open the (.*) doors/i, (msg) ->
-    # your code here
+```javascript
+  robot.respond(/^open the (.*) doors/i, function(msg) {
+    //your code here
+  });
 ```
 
 If Dave says "HAL: open the pod bay doors", then `msg.match[0]` is "open the pod bay doors", and `msg.match[1]` is just "pod bay". Now we can start doing more dynamic things:
 
-```coffeescript
-  robot.respond /open the (.*) doors/i, (msg) ->
-    doorType = msg.match[1]
-    if doorType is "pod bay"
-      msg.reply "I'm afraid I can't let you do that."
-    else
-      msg.reply "Opening #{doorType} doors"
+```javascript
+  robot.respond(/^open the (.*) doors/i, function(msg) {
+    var doorType = msg.match[1];
+    if (doorType === "pod bay") {
+      msg.reply("I'm afraid I can't let you do that.");
+    }
+    else {
+      msg.reply("Opening " + doorType + " doors");
+    }
+  });
 ```
 
 ## Making HTTP calls
@@ -119,97 +124,111 @@ If Dave says "HAL: open the pod bay doors", then `msg.match[0]` is "open the pod
 Brobbot can make HTTP calls on your behalf to integrate & consume third party APIs. This can be through an instance of [node-scoped-http-client](https://github.com/technoweenie/node-scoped-http-client) available at `robot.http`. The simplest case looks like:
 
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
-    .get() (err, res, body) ->
-      # your code here
+    .get()(function(err, res, body) {
+      //your code here
+    });
 ```
 
 A post looks like:
 
-```coffeescript
-  data = JSON.stringify({
+```javascript
+  var data = JSON.stringify({
     foo: 'bar'
-  })
+  });
   robot.http("https://midnight-train")
-    .post(data) (err, res, body) ->
-      # your code here
+    .post(data)(function(err, res, body) {
+      //your code here
+    });
 ```
 
 
 `err` is an error encountered on the way, if one was encountered. You'll generally want to check for this and handle accordingly:
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
-    .get() (err, res, body) ->
-      if err
-        msg.send "Encountered an error :( #{err}"
-        return
-      # your code here, knowing it was successful
+    .get()(function(err, res, body) {
+      if (err) {
+        msg.send("Encountered an error :( " + err);
+        return;
+      }
+      //your code here, knowing it was successful
+    });
 ```
 
 `res` is an instance of node's [http.ServerResponse](http://nodejs.org/api/http.html#http_class_http_serverresponse). Most of the methods don't matter as much when using node-scoped-http-client, but of interest are `statusCode` and `getHeader`. Use `statusCode` to check for the HTTP status code, where usually non-200 means something bad happened. Use `getHeader` for peeking at the header, for example to check for rate limiting:
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
-    .get() (err, res, body) ->
-      # pretend there's error checking code here
+    .get()(function(err, res, body) {
+      //pretend there's error checking code here
 
-      if res.statusCode isnt 200
-        msg.send "Request didn't come back HTTP 200 :("
-        return
+      if (res.statusCode !== 200) {
+        msg.send("Request didn't come back HTTP 200 :(");
+        return;
+      }
 
-      rateLimitRemaining = parseInt res.getHeader('X-RateLimit-Limit') if res.getHeader('X-RateLimit-Limit')
-      if rateLimitRemaining and rateLimitRemaining < 1
-        msg.send "Rate Limit hit, stop believing for awhile"
+      var rateLimitRemaining = res.getHeader('X-RateLimit-Limit');
+      rateLimitRemaining = rateLimitRemaining ? parseInt(rateLimitRemaining) : rateLimitRemaining;
+      if (rateLimitRemaining && rateLimitRemaining < 1) {
+        msg.send("Rate Limit hit, stop believing for awhile");
+      }
 
-      # rest of your code
+      //rest of your code
+    });
 ```
 
 `body` is the response's body as a string, the thing you probably care about the most:
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
-    .get() (err, res, body) ->
-      # error checking code here
+    .get()(function(err, res, body) {
+      //error checking code here
 
-      msg.send "Got back #{body}"
+      msg.send("Got back " + body);
+    });
 ```
 
 ### JSON
 
 If you are talking to APIs, the easiest way is going to be JSON because it doesn't require any extra dependencies. When making the `robot.http` call, you should usually set the  `Accept` header to give the API a clue that's what you are expecting back. Once you get the `body` back, you can parse it with `JSON.parse`:
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
     .header('Accept', 'application/json')
-    .get() (err, res, body) ->
-      # error checking code here
+    .get()(function(err, res, body) {
+      //error checking code here
 
-      data = JSON.parse(body)
-      msg.send "#{data.passenger} taking midnight train going #{data.destination}"
+      var data = JSON.parse(body);
+      msg.send(data.passenger + " taking midnight train going " + data.destination);
+    });
 ```
 
 It's possible to get non-JSON back, like if the API hit an error and it tries to render a normal HTML error instead of JSON. To be on the safe side, you should check the `Content-Type`, and catch any errors while parsing.
 
-```coffeescript
+```javascript
   robot.http("https://midnight-train")
     .header('Accept', 'application/json')
-    .get() (err, res, body) ->
-      # err & response status checking code here
+    .get()(function(err, res, body) {
+      //err & response status checking code here
 
-      if response.getHeader('Content-Type') isnt 'application/json'
-        msg.send "Didn't get back JSON :("
-        return
+      if (response.getHeader('Content-Type') !== 'application/json') {
+        msg.send("Didn't get back JSON :(");
+        return;
+      }
 
-      data = null
-      try
-        data = JSON.parse(body)
-      catch error
-       msg.send "Ran into an error parsing JSON :("
-       return
+      var data = null;
+      try {
+        data = JSON.parse(body);
+      }
+      catch (error) {
+        msg.send("Ran into an error parsing JSON :(");
+        return;
+      }
 
-      # your code here
+      //your code here
+    });
 ```
 
 ### XML
@@ -231,133 +250,158 @@ For those times that there isn't an API, there's always the possibility of scree
 
 A common pattern is to hear or respond to commands, and send with a random funny image or line of text from an array of possibilities. It's annoying to do this in JavaScript and CoffeeScript out of the box, so Brobbot includes a convenience method:
 
-```coffeescript
-lulz = ['lol', 'rofl', 'lmao']
+```javascript
+var lulz = ['lol', 'rofl', 'lmao'];
 
-msg.send msg.random lulz
+msg.send(msg.random(lulz));
 ```
 
 ## Topic
 
 Brobbot can react to a room's topic changing, assuming that the adapter supports it.
 
-```coffeescript
-module.exports = (robot) ->
-  robot.topic (msg) ->
-    msg.send "#{msg.message.text}? That's a Paddlin'"
+```javascript
+module.exports = function(robot) {
+  robot.topic(function(msg) {
+    msg.send(msg.message.text + "? That's a Paddlin'");
+  });
+};
 ```
 
 ## Entering and leaving
 
 Brobbot can see users entering and leaving, assuming that the adapter supports it.
 
-```coffeescript
-enterReplies = ['Hi', 'Target Acquired', 'Firing', 'Hello friend.', 'Gotcha', 'I see you']
-leaveReplies = ['Are you still there?', 'Target lost', 'Searching']
+```javascript
+var enterReplies = ['Hi', 'Target Acquired', 'Firing', 'Hello friend.', 'Gotcha', 'I see you'];
+var leaveReplies = ['Are you still there?', 'Target lost', 'Searching'];
 
-module.exports = (robot) ->
-  robot.enter (msg) ->
-    msg.send msg.random enterReplies
-  robot.leave (msg) ->
-    msg.send msg.random leaveReplies
+module.exports = function(robot) {
+  robot.enter(function(msg) {
+    msg.send(msg.random(enterReplies));
+  });
+  robot.leave(function(msg) {
+    msg.send(msg.random(leaveReplies));
+  });
+};
 ```
 
 ## Environment variables
 
 Brobbot can access the environment he's running in, just like any other node program, using [`process.env`](http://nodejs.org/api/process.html#process_process_env). This can be used to configure how scripts are run, with the convention being to use the `BROBBOT_` prefix.
 
-```coffeescript
-answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+```javascript
+var answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING;
 
-module.exports = (robot) ->
-  robot.respond /what is the answer to the ultimate question of life/, (msg) ->
-    msg.send "#{answer}, but what is the question?"
+module.exports = function(robot) {
+  robot.respond(/^what is the answer to the ultimate question of life/, function(msg) {
+    msg.send(answer + ", but what is the question?");
+  });
+};
 ```
 
 Take care to make sure the script can load if it's not defined, give the Brobbot developer notes on how to define it, or default to something. It's up to the script writer to decide if that should be a fatal error (e.g. brobbot exits), or not (make any script that relies on it to say it needs to be configured. When possible and when it makes sense to, having a script work without any other configuration is preferred.
 
 Here we can default to something:
 
-```coffeescript
-answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING or 42
+```javascript
+var answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING || 42;
 
-module.exports = (robot) ->
-  robot.respond /what is the answer to the ultimate question of life/, (msg) ->
-    msg.send "#{answer}, but what is the question?"
+module.exports = function(robot) {
+  robot.respond(/^what is the answer to the ultimate question of life/, function(msg) {
+    msg.send(answer + ", but what is the question?");
+  });
+};
 ```
 
 Here we exit if it's not defined:
 
-```coffeescript
-answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
-unless answer?
-  console.log "Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
-  process.exit(1)
+```javascript
+var answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING;
+if (!answer) {
+  console.log("Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again");
+  process.exit(1);
+}
 
-module.exports = (robot) ->
-  robot.respond /what is the answer to the ultimate question of life/, (msg) ->
-    msg.send "#{answer}, but what is the question?"
+module.exports = function(robot) {
+  robot.respond(/^what is the answer to the ultimate question of life/, function(msg) {
+    msg.send(answer + ", but what is the question?");
+  });
+};
 ```
 
 And lastly, we update the `robot.respond` to check it:
 
-```coffeescript
-answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING
+```javascript
+var answer = process.env.BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING;
 
-module.exports = (robot) ->
-  robot.respond /what is the answer to the ultimate question of life/, (msg) ->
-    unless answer?
-      msg.send "Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again"
-      return
-    msg.send "#{answer}, but what is the question?"
+module.exports = function(robot) {
+  robot.respond(/^what is the answer to the ultimate question of life/, function(msg) {
+    if (!answer) {
+      msg.send("Missing BROBBOT_ANSWER_TO_THE_ULTIMATE_QUESTION_OF_LIFE_THE_UNIVERSE_AND_EVERYTHING in environment: please set and try again");
+      return;
+    }
+    msg.send(answer + ", but what is the question?");
+  });
+};
 ```
 
 ## Timeouts and Intervals
 
 Brobbot can run code later using JavaScript's built-in [setTimeout](http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg). It takes a callback method, and the amount of time to wait before calling it:
 
-```coffeescript
-module.exports = (robot) ->
-  robot.respond /you are a little slow/, (msg) ->
-    setTimeout () ->
-      msg.send "Who you calling 'slow'?"
-    , 60 * 1000
+```javascript
+module.exports = function(robot) {
+  robot.respond(/^you are a little slow/, function(msg) {
+    setTimeout(function() {
+      msg.send("Who you calling 'slow'?");
+    }, 60 * 1000);
+  });
+};
 ```
 
 Additionally, Brobbot can run code on an interval using [setInterval](http://nodejs.org/api/timers.html#timers_setinterval_callback_delay_arg). It takes a callback method, and the amount of time to wait between calls:
 
-```coffeescript
-module.exports = (robot) ->
-  robot.respond /annoy me/, (msg) ->
-    msg.send "Hey, want to hear the most annoying sound in the world?"
-    setInterval () ->
-      msg.send "AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH"
-    , 1000
+```javascript
+module.exports = function(robot) {
+  robot.respond(/^annoy me/, function(msg) {
+    msg.send("Hey, want to hear the most annoying sound in the world?");
+    setInterval(function() {
+      msg.send("AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH");
+    }, 1000);
+  });
+};
 ```
 
 Both `setTimeout` and `setInterval` return the ID of the timeout or interval it created. This can be used to to `clearTimeout` and `clearInterval`.
 
-```coffeescript
-module.exports = (robot) ->
-  annoyIntervalId = null
+```javascript
+module.exports = function(robot) {
+  var annoyIntervalId = null;
 
-  robot.respond /annoy me/, (msg) ->
-    if annoyIntervalId
-      msg.send "AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH"
-      return
+  robot.respond(/^annoy me/, function(msg) {
+    if (annoyIntervalId) {
+      msg.send("AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH");
+      return;
+    }
 
-    msg.send "Hey, want to hear the most annoying sound in the world?"
-    annoyIntervalId = setInterval () ->
-      msg.send "AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH"
-    , 1000
+    msg.send("Hey, want to hear the most annoying sound in the world?");
+    annoyIntervalId = setInterval(function() {
+      msg.send("AAAAAAAAAAAEEEEEEEEEEEEEEEEEEEEEEEEIIIIIIIIHHHHHHHHHH");
+    }, 1000);
+  });
 
-  robot.respond /unannoy me/, (msg) ->
-    if annoyIntervalId
-      msg.send "GUYS, GUYS, GUYS!"
-      clearInterval(annoyIntervalId) ->
-      annoyIntervalId = null
-    else
-      msg.send "Not annoying you right now, am I?"
+  robot.respond(/^unannoy me/, function(msg) {
+    if (annoyIntervalId) {
+      msg.send("GUYS, GUYS, GUYS!");
+      clearInterval(annoyIntervalId);
+      annoyIntervalId = null;
+    }
+    else {
+      msg.send("Not annoying you right now, am I?");
+    }
+  });
+};
 ```
 
 ## HTTP Listener
@@ -367,16 +411,18 @@ Brobbot includes support for the [express](http://expressjs.com/guide.html) web 
 The most common use of this is for providing HTTP end points for services with webhooks to push to, and have those show up in chat.
 
 
-```coffeescript
-module.exports = (robot) ->
-  robot.router.post '/brobbot/chatsecrets/:room', (req, res) ->
-    room   = req.params.room
-    data   = JSON.parse req.body.payload
-    secret = data.secret
+```javascript
+module.exports = function(robot) {
+  robot.router.post('/brobbot/chatsecrets/:room', function(req, res) {
+    var room = req.params.room;
+    var data = JSON.parse(req.body.payload);
+    var secret = data.secret;
 
-    robot.messageRoom room, "I have a secret: #{secret}"
+    robot.messageRoom(room, "I have a secret: " + secret);
 
-    res.send 'OK'
+    res.send('OK');
+  });
+};
 ```
 
 ## Events
@@ -385,23 +431,27 @@ Brobbot can also respond to events which can be used to pass data between script
 
 One use case for this would be to have one script for handling interactions with a service, and then emitting events as they come up. For example, we could have a script that receives data from a GitHub post-commit hook, make that emit commits as they come in, and then have another script act on those commits.
 
-```coffeescript
-# src/scripts/github-commits.coffee
-module.exports = (robot) ->
-  robot.router.post "/brobbot/gh-commits", (req, res) ->
-    robot.emit "commit", {
-        user    : {}, #brobbot user object
-        repo    : 'https://github.com/github/brobbot',
-        hash  : '2e1951c089bd865839328592ff673d2f08153643'
-    }
+```javascript
+//src/scripts/github-commits.js
+module.exports = function(robot) {
+  robot.router.post("/brobbot/gh-commits", function(req, res) {
+    robot.emit("commit", {
+      user: {}, //brobbot user object
+      repo: 'https://github.com/github/brobbot',
+      hash: '2e1951c089bd865839328592ff673d2f08153643'
+    });
+  });
+};
 ```
 
-```coffeescript
-# src/scripts/heroku.coffee
-module.exports = (robot) ->
-  robot.on "commit", (commit) ->
-    robot.send commit.user, "Will now deploy #{commit.hash} from #{commit.repo}!"
-    #deploy code goes here
+```javascript
+//src/scripts/heroku.js
+module.exports = function(robot) {
+  robot.on("commit", function(commit) {
+    robot.send(commit.user, "Will now deploy " + commit.hash + " from " + commit.repo + "!");
+    //deploy code goes here
+  });
+};
 ```
 
 If you provide an event, it's highly recommended to include a brobbot user or room object in its data. This would allow for brobbot to notify a user or room in chat.
@@ -410,14 +460,17 @@ If you provide an event, it's highly recommended to include a brobbot user or ro
 
 No code is perfect, and errors and exceptions are to be expected. Previously, an uncaught exceptions would crash your brobbot instance. Brobbot now includes an `uncaughtException` handler, which provides hooks for scripts to do something about exceptions.
 
-```coffeescript
-# src/scripts/does-not-compute.coffee
-module.exports = (robot) ->
-  robot.error (err, msg) ->
-    robot.logger.error "DOES NOT COMPUTE"
+```javascript
+# src/scripts/does-not-compute.js
+module.exports = function(robot) {
+  robot.error(function(err, msg) {
+    robot.logger.error("DOES NOT COMPUTE")
 
-    if msg?
-      msg.reply "DOES NOT COMPUTE"
+    if (msg) {
+      msg.reply("DOES NOT COMPUTE");
+    }
+  });
+};
 ```
 
 You can do anything you want here, but you will want to take extra precaution of rescuing and logging errors, particularly with asynchronous code. Otherwise, you might find yourself with recursive errors and not know what is going on.
@@ -426,26 +479,31 @@ Under the hood, there is an 'error' event emitted, with the error handlers consu
 
 Using previous examples:
 
-```coffeescript
-  robot.router.post '/brobbot/chatsecrets/:room', (req, res) ->
-    room = req.params.room
-    data = null
-    try
-      data = JSON.parse req.body.payload
-    catch err
-      robot.emit 'error', error
+```javascript
+  robot.router.post('/brobbot/chatsecrets/:room', function(req, res) {
+    var room = req.params.room;
+    var data = null;
+    try {
+      data = JSON.parse(req.body.payload);
+    }
+    catch (err) {
+      robot.emit('error', error);
+    }
 
-    # rest of the code here
+    //rest of the code here
+  });
 
-
-  robot.hear /midnight train/i, (msg)
+  robot.hear(/midnight train/i, function(msg) {
     robot.http("https://midnight-train")
-      .get() (err, res, body) ->
-        if err
-          msg.reply "Had problems taking the midnight train"
-          robot.emit 'error', err, msg
-          return
-        # rest of code here
+      .get()(function(err, res, body) {
+        if (err) {
+          msg.reply("Had problems taking the midnight train");
+          robot.emit('error', err, msg);
+          return;
+        }
+        //rest of code here
+      });
+  });
 ```
 
 For the second example, it's worth thinking about what messages the user would see. If you have an error handler that replies to the user, you may not need to add a custom
@@ -454,30 +512,30 @@ For the second example, it's worth thinking about what messages the user would s
 
 Brobbot scripts can be documented with comments at the top of their file, for example:
 
-```coffeescript
-# Description:
-#   <description of the scripts functionality>
-#
-# Dependencies:
-#   "<module name>": "<module version>"
-#
-# Configuration:
-#   LIST_OF_ENV_VARS_TO_SET
-#
-# Notes:
-#   <optional notes required for the script>
-#
-# Author:
-#   <github username of the original script author>
+```javascript
+// Description:
+//   <description of the scripts functionality>
+//
+// Dependencies:
+//   "<module name>": "<module version>"
+//
+// Configuration:
+//   LIST_OF_ENV_VARS_TO_SET
+//
+// Notes:
+//   <optional notes required for the script>
+//
+// Author:
+//   <github username of the original script author>
 ```
 
 ## Help Commands
 
 Define a command to be shown in the `brobbot help` output (`'brobbot'` will be replaced with the actual name of your robot):
 
-```coffeescript
-robot.helpCommand 'brobbot <trigger>', '<what the respond trigger does>'
-robot.helpCommand '<trigger>', '<what the hear trigger does>'
+```javascript
+robot.helpCommand('brobbot <trigger>', '<what the respond trigger does>');
+robot.helpCommand('<trigger>', '<what the hear trigger does>');
 ```
 
 When documenting commands, here are some best practices:
@@ -491,33 +549,43 @@ When documenting commands, here are some best practices:
 Brobbot supports loadable brain modules for persisting data. The default module is just an in-memory Javascript object.
 The API is based on the Redis api; indeed you can even install a Redis-backed brobbot brain (https://npmjs.org/package/brobbot-redis-brain).
 
-```coffeescript
-robot.respond /have a soda/i, (msg) ->
-  # Get number of sodas had (coerced to a number).
-  robot.brain.get('totalSodas').then (sodasHad) ->
-    if sodasHad > 4
-      msg.reply "I'm too fizzy.."
-    else
-      msg.reply 'Sure!'
+```javascript
+robot.respond(/^have a soda/i, function(msg) {
+  //Get number of sodas had (coerced to a number).
+  return robot.brain.get('totalSodas').then(function(sodasHad) {
+    if (sodasHad > 4) {
+      msg.reply("I'm too fizzy..");
+    }
+    else {
+      msg.reply('Sure!');
+    }
+    return robot.brain.set('totalSodas', sodasHad + 1);
+  });
+});
 
-    robot.brain.set 'totalSodas', sodasHad+1
-robot.respond /sleep it off/i, (msg) ->
-  robot.brain.set('totalSodas', 0).then ->
-    robot.respond 'zzzzz'
+robot.respond(/^sleep it off/i, function(msg) {
+  return robot.brain.set('totalSodas', 0).then(function() {
+    msg.send('zzzzz');
+  });
+});
 ```
 
 If the script needs to lookup user data, there are methods on `robot.brain` for looking up one or many users by id, name, or 'fuzzy' matching of name: `userForName`, `userForId`, `userForFuzzyName`, and `usersForFuzzyName`.
 
-```coffeescript
-module.exports = (robot) ->
+```javascript
+module.exports = function(robot) {
 
-  robot.respond /who is @?([\w .\-]+)\?*$/i, (msg) ->
-    name = msg.match[1].trim()
+  robot.respond(/^who is @?([\w .\-]+)\?*$/i, function(msg) {
+    var name = msg.match[1].trim();
 
-    robot.brain.usersForFuzzyName(name).then (users) ->
-      if users.length is 1
-        user = users[0]
-        # Do something interesting here..
+    return robot.brain.usersForFuzzyName(name).then(function(users) {
+      if (users.length === 1) {
+        var user = users[0];
+        //Do something interesting here..
 
-        msg.send "#{name} is user - #{user}"
+        msg.send(name + " is user - " + user);
+      }
+    });
+  });
+};
 ```
