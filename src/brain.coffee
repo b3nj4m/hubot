@@ -156,7 +156,12 @@ class Brain extends EventEmitter
   #
   # Returns promise for int
   scard: (key) ->
-    Q @data._private[@key key]?.length
+    key = @key key
+
+    if @data._private[key]
+      Q @data._private[key].length
+    else
+      Q 0
 
   # Public: Get and remove a random member from the set
   #
