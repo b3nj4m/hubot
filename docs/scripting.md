@@ -11,6 +11,18 @@ npm install brobbot-quote --save
 ./index.sh -s quote
 ```
 
+Your package should specify `brobbot` as a peer-dependency, not a regular dependency:
+
+```json
+{
+  "name": "brobbot-quote",
+  ...
+  "peerDependecies": {
+    "brobbot": "4.x"
+  }
+}
+```
+
 ## Anatomy of a script
 
 For a script to be a script, it needs to:
