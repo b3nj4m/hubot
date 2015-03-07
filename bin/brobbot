@@ -38,6 +38,8 @@ if Options.scripts
 else
   Options.scripts = []
 
+Options.scripts.push('./scripts/help')
+
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage brobbot [options]"
 
@@ -66,7 +68,7 @@ Parser.on "name", (opt, value) ->
   Options.name = value
 
 Parser.on "scripts", (opt, value) ->
-  Options.scripts = Options.scripts.concat value.split(',')
+  Options.scripts = Options.scripts.concat(value.split(','))
 
 Parser.on "config-check", (opt) ->
   Options.configCheck = true
@@ -80,15 +82,12 @@ unless process.platform is "win32"
   process.on 'SIGTERM', ->
     process.exit 0
 
-adapterPath = Path.join __dirname, "..", "src", "adapters"
-brainPath = Path.join __dirname, "..", "src", "brains"
-
 if Options.version
-  console.log require('./package.json').version
+  console.log(require('../package.json').version)
   process.exit 0
 
-robot = Brobbot.loadBot Options.scripts, adapterPath, Options.adapter, brainPath, Options.brain, Options.enableHttpd, Options.name
+robot = Brobbot.loadBot Options.scripts, Options.adapter, Options.brain, Options.enableHttpd, Options.name
 
 robot.alias = Options.alias
 
-robot.ready.then -> robot.run()
+robot.run().fail (err) -> robot.shutdown(1)

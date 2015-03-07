@@ -1,12 +1,15 @@
 Readline = require 'readline'
 
-Robot         = require '../robot'
-Adapter       = require '../adapter'
+Robot = require '../robot'
+Adapter = require '../adapter'
 {TextMessage} = require '../message'
+Q = require 'q'
 
 class Shell extends Adapter
-  constructor: (@robot, @brain) ->
-    super(@robot, @brain)
+  constructor: (@robot) ->
+    super(@robot)
+    @readyDefer = Q.defer()
+    @ready = @readyDefer.promise
 
   send: (envelope, strings...) ->
     unless process.platform is 'win32'
@@ -39,10 +42,9 @@ class Shell extends Adapter
       @robot.brain.userForId('1', name: 'Shell', room: 'Shell').then (user) =>
         @receive new TextMessage user, buffer, 'messageId'
 
-    @emit 'connected'
+    @readyDefer.resolve(@)
 
     @repl.setPrompt "#{@robot.name}> "
     @repl.prompt()
 
-exports.use = (robot) ->
-  new Shell robot
+module.exports = Shell

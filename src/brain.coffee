@@ -318,7 +318,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   close: ->
-    Q @
+    Q(@)
 
   # Public: Merge keys against the in memory representation.
   #

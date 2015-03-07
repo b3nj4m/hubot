@@ -5,12 +5,8 @@ class Adapter extends EventEmitter
   # An adapter is a specific interface to a chat source for robots.
   #
   # robot - A Robot instance.
-  constructor: (@robot, @brain) ->
-    @readyDefer = Q.defer()
-    @ready = @readyDefer.promise
-    # for compatibility with hubot adapters
-    @on 'connected', =>
-      @readyDefer.resolve()
+  constructor: (@robot) ->
+    @ready = Q(@)
 
   # Public: Raw method for sending data back to the chat source. Extend this.
   #
@@ -64,6 +60,7 @@ class Adapter extends EventEmitter
   #
   # Returns nothing.
   close: ->
+    Q(@)
 
   # Public: Dispatch a received message to the robot.
   #

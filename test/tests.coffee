@@ -13,7 +13,9 @@ Response      = require '../src/response'
 # Instantiates a test-only Robot that sends messages to an optional callback
 # and a @sent array.
 exports.helper = ->
-  new Helper "#{__dirname}/scripts"
+  helper = new Helper(['../test/scripts/test'])
+  helper.run()
+  helper
 
 # Training facility built for the Brobbot scripts.  Starts up a web server to
 # emulate backends (like google images) so we can test that the response
@@ -35,27 +37,26 @@ exports.danger = (helper, cb) ->
   server
 
 class Helper extends Robot
-  constructor: (scriptPath) ->
-    super null, null, true, 'helper'
-    @load scriptPath
+  constructor: (scripts) ->
+    super scripts, Danger, null, true, 'helper'
     @id = 1
     @Response = Helper.Response
     @sent = []
     @recipients = []
-    @adapter = new Danger @
     @alias = 'alias'
 
   stop: ->
-    process.exit 0
+    process.exit(0)
 
   reset: ->
     @sent = []
 
 class Danger extends Adapter
   send: (user, strings...) ->
-    @robot.sent.push str for str in strings
-    @robot.recipients.push user for str in strings
-    @cb? strings...
+    @robot.sent.push.apply(@robot.sent, strings)
+    for string in strings
+      @robot.recipients.push(user)
+    @cb?(strings...)
 
   reply: (user, strings...) ->
     @send user, "#{@robot.name}: #{str}" for str in strings

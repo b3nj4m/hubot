@@ -1,11 +1,12 @@
 _ = require 'lodash'
-Q              = require 'q'
-Fs             = require 'fs'
-Log            = require 'log'
-Path           = require 'path'
-HttpClient     = require 'scoped-http-client'
+Q = require 'q'
+Fs = require 'fs'
+Log = require 'log'
+Path = require 'path'
+HttpClient = require 'scoped-http-client'
 {EventEmitter} = require 'events'
 
+Adapter = require './adapter'
 User = require './user'
 RobotSegment = require './robot-segment'
 Response = require './response'
@@ -38,50 +39,53 @@ class Robot
   # Robots receive messages from a chat source (Campfire, irc, etc), and
   # dispatch them to matching listeners.
   #
-  # scripts     - An array of modules to load
-  # adapterPath - A String of the path to local adapters.
-  # adapter     - A String of the adapter name.
-  # brainPath - A String of the path to local brains.
-  # brain     - A String of the brain name.
-  # httpd       - A Boolean whether to enable the HTTP daemon.
-  # name        - A String of the robot name, defaults to Brobbot.
+  # scripts - An array of string modules names to load
+  # adapter - A string adapter name or an adapter constructor.
+  # brain - A string brain name or a brain constructor.
+  # httpd - A boolean whether to enable the HTTP daemon.
+  # name - A string of the robot name, defaults to Brobbot.
   #
   # Returns nothing.
-  constructor: (scripts, adapterPath, adapter, brainPath, brain, httpd, name = 'Brobbot') ->
-    @name      = name
-    @nameRegex = new RegExp "^\\s*#{name}:?\\s+", 'i'
-    @events    = new EventEmitter
-    @alias     = false
-    @adapter   = null
-    @Response  = Response
-    @commands  = []
+  constructor: (scripts, adapter, brain, httpd, name = 'Brobbot') ->
+    @name = name
+    @nameRegex = new RegExp("^@?\\s*#{name}:?\\s+", 'i')
+    @events = new EventEmitter()
+    @alias = false
+    @adapter = null
+    @Response = Response
+    @commands = []
     @listeners = []
     @respondListeners = []
     #TODO namespaced logger per-script
-    @logger    = new Log process.env.BROBBOT_LOG_LEVEL or 'info'
+    @logger = new Log(process.env.BROBBOT_LOG_LEVEL or 'info')
     @pingIntervalId = null
 
     @parseVersion()
+
     if httpd
       @setupExpress()
     else
       @setupNullRouter()
 
-    @brainReady = @loadBrain brainPath, brain
-    @scriptsReady = @loadScripts scripts
-    @adapterReady = @loadAdapter adapterPath, adapter
+    @brainReady = @loadBrain(brain)
+    @scriptsReady = @loadScripts(scripts)
+    @adapterReady = @loadAdapter(adapter)
 
-    @ready = Q.all [@brainReady, @scriptsReady]
+    @ready = Q.all([@brainReady, @scriptsReady])
     @connected = @adapterReady
 
     @adapterName = adapter
     @errorHandlers = []
 
+    @ready.fail (err) =>
+      @logger.error(err.stack)
+
     @on 'error', (err, msg) =>
       @invokeErrorHandlers(err, msg)
+
     process.on 'uncaughtException', (err) =>
-      @logger.error err.stack
-      @emit 'error', err
+      @logger.error(err.stack)
+      @emit('error', err)
 
 
   # Public: Adds a Listener that attempts to match incoming messages based on
@@ -173,13 +177,14 @@ class Robot
   catchAll: (callback) ->
     @listeners.push new Listener(
       @,
+      #TODO this is dumb
       ((msg) -> msg instanceof CatchAllMessage),
       ((msg) -> msg.message = msg.message.message; callback msg)
     )
 
   messageIsToMe: (message) ->
     if @alias
-      @aliasRegex = new RegExp "^\\s*#{@alias}:?\\s+", 'i'
+      @aliasRegex = new RegExp "^@?\\s*#{@alias}:?\\s+", 'i'
     else
       @aliasRegex = false
 
@@ -227,15 +232,27 @@ class Robot
   loadScripts: (scripts) ->
     @brainReady.then =>
       Q.all _.map scripts, (script) =>
-        Q(require("brobbot-#{script}")(@segment(script)))
+        @loadScript(script)
+
+  loadScript: (script) ->
+    try
+      path = "brobbot-#{script}"
+      require.resolve(path)
+    catch err
+      path = script
+
+    try
+      return Q(require(path)(@segment(script)))
+    catch err
+      return Q.reject(err)
 
   # Setup the Express server's defaults.
   #
   # Returns nothing.
   setupExpress: ->
-    user    = process.env.EXPRESS_USER
-    pass    = process.env.EXPRESS_PASSWORD
-    stat    = process.env.EXPRESS_STATIC
+    user = process.env.EXPRESS_USER
+    pass = process.env.EXPRESS_PASSWORD
+    stat = process.env.EXPRESS_STATIC
 
     express = require 'express'
 
@@ -255,7 +272,7 @@ class Robot
       @router = app
     catch err
       @logger.error "Error trying to start HTTP server: #{err}\n#{err.stack}"
-      process.exit(1)
+      @shutdown(1)
 
     herokuUrl = process.env.HEROKU_URL
 
@@ -280,45 +297,59 @@ class Robot
 
   # Load the brain Brobbot is going to use.
   #
-  # path    - A String of the path to brain if local.
   # brain - A String of the brain name to use.
   #
   # Returns promise.
-  loadBrain: (path, brain) ->
+  loadBrain: (brain) ->
+    brain = brain or 'dumb'
     @logger.debug "Loading brain #{brain}"
 
-    try
+    if _.isString(brain)
       path = if brain in BROBBOT_DEFAULT_BRAINS
-        "#{path}/#{brain}"
+        "./brains/#{brain}"
       else
         "brobbot-#{brain}-brain"
 
-      @brain = new (require(path)) @
+      try
+        require.resolve(path)
+      catch err
+        path = brain
+
+    try
+      BrainFn = _.isFunction(brain) and brain or require(path)
+      @brain = new BrainFn(@)
       return @brain.ready or Q(@brain)
     catch err
       @logger.error "Cannot load brain #{brain} - #{err.stack}"
-      process.exit(1)
+      @shutdown(1)
 
   # Load the adapter Brobbot is going to use.
   #
-  # path    - A String of the path to adapter if local.
   # adapter - A String of the adapter name to use.
   #
   # Returns promise.
-  loadAdapter: (path, adapter) ->
+  loadAdapter: (adapter) ->
+    adapter = adapter or 'shell'
     @logger.debug "Loading adapter #{adapter}"
 
-    try
+    if _.isString(adapter)
       path = if adapter in BROBBOT_DEFAULT_ADAPTERS
-        "#{path}/#{adapter}"
+        "./adapters/#{adapter}"
       else
         "brobbot-#{adapter}"
 
-      @adapter = require(path).use @
+      try
+        require.resolve(path)
+      catch err
+        path = adapter
+
+    try
+      AdapterFn = _.isFunction(adapter) and adapter or require(path)
+      @adapter = new AdapterFn(@)
       return @adapter.ready or Q(@adapter)
     catch err
       @logger.error "Cannot load adapter #{adapter} - #{err.stack}"
-      process.exit(1)
+      @shutdown(1)
 
   # Public: Help Commands for Running Scripts.
   #
@@ -340,7 +371,7 @@ class Robot
   #
   # Returns nothing.
   send: (user, strings...) ->
-    @adapter.send user, strings...
+    @adapter.send(user, strings...)
 
   # Public: A helper reply function which delegates to the adapter's reply
   # function.
@@ -387,27 +418,30 @@ class Robot
   #
   # Returns nothing.
   run: ->
-    require('./scripts/help') @
-    @emit "running"
-    @adapter.run()
+    @ready.then =>
+      @emit("running")
+      @adapter.run()
 
   # Public: Gracefully shutdown the robot process
   #
   # Returns nothing.
-  shutdown: ->
-    clearInterval @pingIntervalId if @pingIntervalId?
-    @adapter.close()
-    @brain.close()
-    
-    if @redisClient
-      @redisClient.close()
+  shutdown: (exitCode) ->
+    @logger.info("shutting down...")
 
-  # Public: The version of Brobbot from npm
-  #
-  # Returns a String of the version number.
+    clearInterval @pingIntervalId if @pingIntervalId?
+
+    closing = []
+
+    if @adapter
+      closing.push(@adapter.close())
+    if @brain
+      closing.push(@brain.close())
+
+    Q.all(closing).finally ->
+      process.exit(exitCode or 0)
+    
   parseVersion: ->
-    pkg = require Path.join __dirname, '..', 'package.json'
-    @version = pkg.version
+    @version = require('../package.json').version
 
   # Public: Creates a scoped http client with chainable methods for
   # modifying the request. This doesn't actually make a request though.
