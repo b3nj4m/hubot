@@ -32,7 +32,7 @@ class Brain extends EventEmitter
       @data._private[key] = []
 
     @data._private[@key key][index] = @serialize value
-    Q @
+    Q()
 
   # Public: insert a value into the list before or after the pivot element.
   #
@@ -51,7 +51,7 @@ class Brain extends EventEmitter
         index = index + 1
       @data._private[key].splice(index, 0, @serialize(value))
 
-    Q @
+    Q()
 
   # Public: push a new value onto the left-side of the list
   #
@@ -62,7 +62,7 @@ class Brain extends EventEmitter
       @data._private[key] = []
 
     @data._private[key].unshift(@serialize value)
-    Q @
+    Q()
 
   # Public: push a new value onto the right-side of the list
   #
@@ -73,7 +73,7 @@ class Brain extends EventEmitter
       @data._private[key] = []
 
     @data._private[key].push(@serialize value)
-    Q @
+    Q()
 
   # Public: pop a value off of the left-side of the list
   #
@@ -131,7 +131,7 @@ class Brain extends EventEmitter
     if not _.contains(@data._private[key], value)
       @data._private[key].push(value)
 
-    Q(@)
+    Q()
 
   # Public: Test whether the member is in the set
   #
@@ -149,7 +149,7 @@ class Brain extends EventEmitter
     if index > -1
       @data._private[key].splice(index, 1)
 
-    Q(@)
+    Q()
 
   # Public: Get the size of the set
   #
@@ -231,7 +231,7 @@ class Brain extends EventEmitter
     else
       @data._private[@key key] = @serialize(value)
 
-    Q(@)
+    Q()
 
   # Public: Get value by key from the private namespace in @data
   # or return null if not found.
@@ -279,7 +279,7 @@ class Brain extends EventEmitter
     table = @key table
     @data._private[table] = @data._private[table] or {}
     @data._private[table][key] = @serialize value
-    Q @
+    Q()
 
   # Public: Get a value from the specified hash table.
   #
@@ -292,7 +292,7 @@ class Brain extends EventEmitter
   # Returns promise
   hdel: (table, key) ->
     delete @data._private[@key table]?[key]
-    Q @
+    Q()
 
   # Public: Get the whole hash table as an object.
   #
@@ -307,7 +307,7 @@ class Brain extends EventEmitter
     table = @key table
     @data._private[table] = @data._private[table] or {}
     @data._private[table][key] = (@data._private[table][key] or 0) + num
-    Q @data._private[table][key]
+    Q(@data._private[table][key])
 
   # Public: Remove value by key from the private namespace in @data
   # if it exists
@@ -315,7 +315,7 @@ class Brain extends EventEmitter
   # Returns promise
   remove: (key) ->
     delete @data._private[@key key]
-    Q @
+    Q()
   # alias for remove
   del: (key) ->
     @remove key
@@ -324,15 +324,7 @@ class Brain extends EventEmitter
   #
   # Returns promise
   close: ->
-    Q(@)
-
-  # Public: Merge keys against the in memory representation.
-  #
-  # Returns promise
-  #
-  # Caveats: Deeply nested structures don't merge well.
-  mergeData: (data) ->
-    @set data
+    Q()
 
   # Public: Perform any necessary pre-set serialization on a value
   #

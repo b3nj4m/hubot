@@ -230,14 +230,6 @@ Override this in your brain module to perform any necessary cleanup (e.g. closin
 
 Returns promise.
 
-### mergeData(data)
-
-Merge keys against the in memory representation.
-
-Returns promise.
-
-Caveats: Deeply nested structures don't merge well.
-
 ### serialize(value)
 
 Perform any necessary pre-set serialization on a value.

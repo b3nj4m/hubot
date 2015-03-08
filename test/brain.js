@@ -1,4 +1,5 @@
 var assert = require('assert');
+var _ = require('lodash');
 var Q = require('q');
 var User = require('../src/user');
 
@@ -89,6 +90,14 @@ module.exports = function(name, brain) {
       it('should increment again', function() {
         return brain.incrby('somenumber', 1).then(function(val) {
           assert.strictEqual(val, 3);
+        });
+      });
+
+      it('should delete', function() {
+        return brain.remove('somenumber').then(function() {
+          return brain.get('somenumber').then(function(val) {
+            assert.strictEqual(val, null);
+          });
         });
       });
     });
@@ -296,7 +305,82 @@ module.exports = function(name, brain) {
     });
 
     describe('hash table', function() {
-      //TODO
+      var tableName = 'test-hash';
+      var keyName = 'topping';
+      var value = {salsa: 'fresca'};
+      var keyName2 = 'wrapping';
+      var value2 = {tortilla: 'corn'};
+
+      it('should set', function() {
+        return brain.hset(tableName, keyName, value).then(function() {
+          return brain.hget(tableName, keyName).then(function(val) {
+            assert.strictEqual(val.salsa, value.salsa);
+          });
+        });
+      });
+
+      it('should set again', function() {
+        return brain.hset(tableName, keyName2, value2).then(function() {
+          return brain.hget(tableName, keyName2).then(function(val) {
+            assert.strictEqual(val.tortilla, value2.tortilla);
+          });
+        });
+      });
+
+      it('should get', function() {
+        return brain.hget(tableName, keyName).then(function(val) {
+          assert.strictEqual(val.salsa, value.salsa);
+        });
+      });
+
+      it('should get all keys', function() {
+        return brain.hkeys(tableName).then(function(keys) {
+          assert.strictEqual(keys.length, 2);
+          assert.equal(_.contains(keys, keyName), true);
+          assert.equal(_.contains(keys, keyName2), true);
+        });
+      });
+
+      it('should get all values', function() {
+        return brain.hvals(tableName).then(function(vals) {
+          assert.strictEqual(vals.length, 2);
+          vals = _.sortBy(vals, function(val) { return JSON.stringify(val); });
+          assert.strictEqual(vals[0].salsa, value.salsa);
+          assert.strictEqual(vals[1].tortilla, value2.tortilla);
+        });
+      });
+
+      it('should get length', function() {
+        return brain.hlen(tableName).then(function(length) {
+          assert.strictEqual(length, 2);
+        });
+      });
+
+      it('should delete', function() {
+        return brain.hdel(tableName, keyName2).then(function() {
+          return brain.hlen(tableName).then(function(length) {
+            assert.strictEqual(length, 1);
+          });
+        });
+      });
+
+      it('should get table as object', function() {
+        return brain.hgetall(tableName).then(function(o) {
+          assert.strictEqual(o[keyName].salsa, value.salsa);
+        });
+      });
+
+      it('should increment', function() {
+        return brain.hincrby(tableName, keyName2, 2).then(function(val) {
+          assert.strictEqual(val, 2);
+        });
+      });
+
+      it('should increment again', function() {
+        return brain.hincrby(tableName, keyName2, 1).then(function(val) {
+          assert.strictEqual(val, 3);
+        });
+      });
     });
   });
 };
