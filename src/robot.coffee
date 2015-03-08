@@ -48,7 +48,7 @@ class Robot
   # Returns nothing.
   constructor: (scripts, adapter, brain, httpd, name = 'Brobbot') ->
     @name = name
-    @nameRegex = new RegExp("^@?\\s*#{name}:?\\s+", 'i')
+    @nameRegex = new RegExp("^\\s*@?#{name}:?\\s+", 'i')
     @events = new EventEmitter()
     @alias = false
     @adapter = null
@@ -184,7 +184,7 @@ class Robot
 
   messageIsToMe: (message) ->
     if @alias
-      @aliasRegex = new RegExp "^@?\\s*#{@alias}:?\\s+", 'i'
+      @aliasRegex = new RegExp "^\\s*@?#{@alias}:?\\s+", 'i'
     else
       @aliasRegex = false
 

@@ -7,34 +7,6 @@ User          = require '../src/user'
 Response      = require '../src/response'
 {TextMessage} = require '../src/message'
 
-# A programmer's best friend.
-# http://timenerdworld.files.wordpress.com/2010/12/joint-venture-s1e3_1.jpg
-#
-# Instantiates a test-only Robot that sends messages to an optional callback
-# and a @sent array.
-exports.helper = ->
-  helper = new Helper(['../test/scripts/test'])
-  helper.run()
-  helper
-
-# Training facility built for the Brobbot scripts.  Starts up a web server to
-# emulate backends (like google images) so we can test that the response
-# parsing code functions.
-exports.danger = (helper, cb) ->
-  server = require('http').createServer (req, res) ->
-    url = Url.parse req.url, true
-    cb req, res, url
-
-  server.start = (tests, cb) ->
-    server.listen 9001, ->
-      helper.adapter.cb = (messages...) ->
-        tests.shift() messages...
-        server.close() if tests.length == 0
-
-      cb()
-
-  server.on 'close', -> helper.close()
-  server
 
 class Helper extends Robot
   constructor: (scripts) ->
@@ -48,8 +20,15 @@ class Helper extends Robot
   stop: ->
     process.exit(0)
 
+  run: ->
+    super().then =>
+      @server = require('http').createServer((req, res) => res.end('static'))
+      @server.listen(9001)
+      @server.on('close', => @close())
+
   reset: ->
     @sent = []
+    @recipients = []
 
 class Danger extends Adapter
   send: (user, strings...) ->
@@ -63,7 +42,7 @@ class Danger extends Adapter
 
   receive: (text) ->
     if typeof text is 'string'
-      user = new User 1, 'helper'
+      user = new User 1, name: 'helper'
       super new TextMessage user, text
     else
       super text
@@ -74,3 +53,5 @@ if not process.env.BROBBOT_LIVE
     http: (url) ->
       super(url).host('127.0.0.1').port(9001)
 
+module.exports = new Helper(['../test/scripts/test'])
+module.exports.run()

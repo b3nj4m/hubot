@@ -14,14 +14,7 @@ class Brain extends EventEmitter
       users: {}
       _private: {}
 
-    @autoSave = true
-    @ready = Q @
-
-  # Take a dump
-  #
-  # Returns promise for object
-  dump: ->
-    Q(@data)
+    @ready = Q(@)
 
   # Public: get the length of the list stored at `key`
   #
@@ -49,10 +42,14 @@ class Brain extends EventEmitter
     if @data._private[key] is undefined
       @data._private[key] = []
 
-    index = _.find @data._private[key], pivot
+    pivot = @serialize(pivot)
 
-    if index
-      @data._private[key].splice 0, placement is 'AFTER' ? index + 1 : index, @serialize(value)
+    index = _.findIndex(@data._private[key], (val) => val is pivot)
+
+    if index > -1
+      if placement is 'AFTER'
+        index = index + 1
+      @data._private[key].splice(index, 0, @serialize(value))
 
     Q @
 
@@ -94,7 +91,7 @@ class Brain extends EventEmitter
   #
   # Returns promise for list item
   lindex: (key, index) ->
-    Q(@deserialize(@data._private[@key key]?[index]))
+    Q(@deserialize(@data._private[@key key]?[index] or null))
 
   # Public: get an entire list
   #
@@ -118,7 +115,7 @@ class Brain extends EventEmitter
   # Returns promise
   lrem: (key, value) ->
     key = @key key
-    @data._private[key] = _.without @data._private[key], value
+    @data._private[key] = _.without(@data._private[key], @serialize(value))
     Q()
 
   # Public: Add a member to the set specified by `key`
@@ -129,28 +126,30 @@ class Brain extends EventEmitter
     if @data._private[key] is undefined
       @data._private[key] = []
 
-    #TODO behavior with objects may not be what's expected. maybe make JSON.stringify the default serializer?
-    if not _.contains @data._private[key], value
-      @data._private[key].push(@serialize value)
+    value = @serialize(value)
 
-    Q @
+    if not _.contains(@data._private[key], value)
+      @data._private[key].push(value)
+
+    Q(@)
 
   # Public: Test whether the member is in the set
   #
   # Returns promise for boolean
   sismember: (key, value) ->
-    Q(_.contains @data._private[key], value)
+    Q(_.contains(@data._private[key], @serialize(value)))
 
   # Public: Remove a member from the set
   #
   # Returns promise
   srem: (key, value) ->
-    key = @key key
-    index = _.findIndex @data._private[key], value
-    if index
-      @data._private[key].splice(1, index)
+    key = @key(key)
+    value = @serialize(value)
+    index = _.findIndex(@data._private[key], (val) -> val is value)
+    if index > -1
+      @data._private[key].splice(index, 1)
 
-    Q @
+    Q(@)
 
   # Public: Get the size of the set
   #
@@ -159,34 +158,41 @@ class Brain extends EventEmitter
     key = @key key
 
     if @data._private[key]
-      Q @data._private[key].length
+      Q(@data._private[key].length)
     else
-      Q 0
+      Q(0)
 
   # Public: Get and remove a random member from the set
   #
   # Returns promise for a set member
   spop: (key) ->
     key = @key key
-    index = _.random 0, @data._private[key]?.length - 1
-    item = @data._private[key]?[index]
+    
+    if @data._private[key] is undefined
+      return Q(null)
 
-    @data._private[key]?.splice(1, index)
+    index = _.random(0, @data._private[key].length - 1)
+    item = @data._private[key][index]
 
-    Q item
+    @data._private[key].splice(index, 1)
+
+    Q(@deserialize(item))
 
   # Public: Get a random member from the set
   #
   # Returns promise for a set member
   srandmember: (key) ->
     key = @key key
-    Q @data._private[key]?[_.random 0, @data._private[key]?.length - 1]
+    if @data._private[key] is undefined or @data._private[key].length is 0
+      return Q(null)
+
+    Q(@deserialize(@data._private[key][_.random(0, @data._private[key].length - 1)]))
 
   # Public: Get all the members of the set
   #
   # Returns promise for array
   smembers: (key) ->
-    Q @data._private[@key key]
+    Q(_.map(@data._private[@key key], @deserialize.bind(@)))
 
   # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
@@ -223,9 +229,9 @@ class Brain extends EventEmitter
       _.each key, (v, k) =>
         @set k, v
     else
-      @data._private[@key key] = @serialize value
+      @data._private[@key key] = @serialize(value)
 
-    Q @
+    Q(@)
 
   # Public: Get value by key from the private namespace in @data
   # or return null if not found.
@@ -246,7 +252,7 @@ class Brain extends EventEmitter
   incrby: (key, num) ->
     key = @key key
     @data._private[key] = (@data._private[key] or 0) + num
-    Q @data._private[key]
+    Q(@data._private[key])
 
   # Public: Get all the keys for the given hash table name
   #
@@ -332,13 +338,13 @@ class Brain extends EventEmitter
   #
   # Returns serialized value
   serialize: (value) ->
-    value
+    JSON.stringify(value)
 
   # Public: Perform any necessary post-get deserialization on a value
   #
   # Returns deserialized value
   deserialize: (value) ->
-    value
+    JSON.parse(value)
 
   # Public: Get an Array of User objects stored in the brain.
   #
