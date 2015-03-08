@@ -10,13 +10,18 @@ Most methods should return a promise.
 - [dumb](../src/brains/dumb.coffee) (the default)
 - [Redis](https://npmjs.org/package/brobbot-redis-brain)
 - [PostgreSQL](https://npmjs.org/package/brobbot-pg-brain)
-- More coming soon!
 
 ## API
 
 ### ready
 
 A promise to be resolved when the brain is ready for use.
+
+### reset()
+
+Reset the datastore. Destroys all data.
+
+Returns promise.
 
 ### llen(key)
 

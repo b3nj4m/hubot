@@ -79,7 +79,7 @@ You can specify which adapter to use with the `-a` option:
 
 ## Brains
 
-Brobbot can support multiple brain adapters. See [docs/brains.md](brains.md). You can specify which brain to use with the `-b` option:
+Brobbot can use one of multiple brain adapters. See [docs/brains.md](brains.md). You can specify which brain to use with the `-b` option:
 
 ```bash
 ./index.sh -b redis

@@ -16,9 +16,17 @@ class Brain extends EventEmitter
 
     @ready = Q(@)
 
+  # Reset the datastore. destroys all data.
+  #
+  # returns promise
+  reset: ->
+    @data.users = {}
+    @data._private = {}
+    Q()
+
   # Public: get the length of the list stored at `key`
   #
-  # Returns int
+  # Returns promise for int
   llen: (key) ->
     Q(@data._private[@key key]?.length)
 

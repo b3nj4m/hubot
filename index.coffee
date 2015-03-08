@@ -22,5 +22,5 @@ module.exports = {
   CatchAllMessage
 }
 
-module.exports.loadBot = (adapterPath, adapterName, brainPath, brainName, enableHttpd, botName, useRedis) ->
-  new Robot adapterPath, adapterName, brainPath, brainName, enableHttpd, botName, useRedis
+module.exports.loadBot = (adapterName, brainName, enableHttpd, botName) ->
+  new Robot adapterName, brainName, enableHttpd, botName

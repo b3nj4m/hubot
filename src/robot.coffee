@@ -295,9 +295,27 @@ class Robot
       delete: ()=> @logger.warning msg
 
 
+  # Given a brain name, resolve to a module path
+  #
+  # brain - string brain name
+  #
+  # returns string path
+  resolveBrain: (brain) ->
+    path = if brain in BROBBOT_DEFAULT_BRAINS
+      "./brains/#{brain}"
+    else
+      "brobbot-#{brain}-brain"
+
+    try
+      require.resolve(path)
+    catch err
+      path = brain
+
+    path
+
   # Load the brain Brobbot is going to use.
   #
-  # brain - A String of the brain name to use.
+  # brain - A String of the brain name to use or a Brain constructor.
   #
   # Returns promise.
   loadBrain: (brain) ->
@@ -305,15 +323,7 @@ class Robot
     @logger.debug "Loading brain #{brain}"
 
     if _.isString(brain)
-      path = if brain in BROBBOT_DEFAULT_BRAINS
-        "./brains/#{brain}"
-      else
-        "brobbot-#{brain}-brain"
-
-      try
-        require.resolve(path)
-      catch err
-        path = brain
+      path = @resolveBrain(brain)
 
     try
       BrainFn = _.isFunction(brain) and brain or require(path)
@@ -323,9 +333,27 @@ class Robot
       @logger.error "Cannot load brain #{brain} - #{err.stack}"
       @shutdown(1)
 
+  # given an adapter name, resolve module path
+  #
+  # adapter - adapter name string
+  #
+  # returns string path
+  resolveAdapter: (adapter) ->
+    path = if adapter in BROBBOT_DEFAULT_ADAPTERS
+      "./adapters/#{adapter}"
+    else
+      "brobbot-#{adapter}"
+
+    try
+      require.resolve(path)
+    catch err
+      path = adapter
+
+    path
+
   # Load the adapter Brobbot is going to use.
   #
-  # adapter - A String of the adapter name to use.
+  # adapter - A String of the adapter name to use or an Adapter constructor.
   #
   # Returns promise.
   loadAdapter: (adapter) ->
@@ -333,15 +361,7 @@ class Robot
     @logger.debug "Loading adapter #{adapter}"
 
     if _.isString(adapter)
-      path = if adapter in BROBBOT_DEFAULT_ADAPTERS
-        "./adapters/#{adapter}"
-      else
-        "brobbot-#{adapter}"
-
-      try
-        require.resolve(path)
-      catch err
-        path = adapter
+      path = @resolveAdapter(adapter)
 
     try
       AdapterFn = _.isFunction(adapter) and adapter or require(path)

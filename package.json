@@ -31,7 +31,7 @@
     "brobbot": "./bin/brobbot"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --compilers coffee:coffee-script ./test/index.js"
+    "test": "mocha --compilers coffee:coffee-script ./test/index.js"
   },
   "devDependencies": {
     "mocha": "^2.2.0"
