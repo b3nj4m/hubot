@@ -1,10 +1,10 @@
 {
   "name": "brobbot",
-  "version": "4.0.10",
+  "version": "5.0.0",
   "author": "brobbot",
   "keywords": [
-    "github",
     "brobbot",
+    "chatbot"
     "bot"
   ],
   "description": "A simple helpful robot for your Company",
@@ -23,8 +23,8 @@
     "lodash": "~2.4.1"
   },
   "engines": {
-    "node": ">= 0.8.x",
-    "npm": ">= 1.1.x"
+    "node": ">= 0.10.x",
+    "npm": ">= 2.0.x"
   },
   "main": "./index",
   "bin": {
