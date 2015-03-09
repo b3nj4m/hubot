@@ -376,9 +376,8 @@ class Robot
   #
   # Returns an Array of help commands for running scripts.
   helpCommands: ->
-    commands = _.map @commands, (command) ->
+    _.map @commands, (command) ->
       command.command + ' - ' + command.description
-    commands.sort()
 
   # Public: add a help command
   helpCommand: (command, description) ->
