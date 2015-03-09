@@ -6,7 +6,6 @@ Path = require 'path'
 HttpClient = require 'scoped-http-client'
 {EventEmitter} = require 'events'
 
-Adapter = require './adapter'
 User = require './user'
 RobotSegment = require './robot-segment'
 Response = require './response'
