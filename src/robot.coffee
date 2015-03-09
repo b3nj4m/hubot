@@ -10,7 +10,7 @@ User = require './user'
 RobotSegment = require './robot-segment'
 Response = require './response'
 {Listener,TextListener} = require './listener'
-{EnterMessage,LeaveMessage,TopicMessage,CatchAllMessage,TextMessage} = require './message'
+{EnterMessage,LeaveMessage,TopicMessage,TextMessage} = require './message'
 
 BROBBOT_DEFAULT_ADAPTERS = [
   'campfire'
@@ -55,6 +55,7 @@ class Robot
     @commands = []
     @listeners = []
     @respondListeners = []
+    @catchAllListeners = []
     #TODO namespaced logger per-script
     @logger = new Log(process.env.BROBBOT_LOG_LEVEL or 'info')
     @pingIntervalId = null
@@ -174,10 +175,9 @@ class Robot
   #
   # Returns nothing.
   catchAll: (callback) ->
-    @listeners.push new Listener(
+    @catchAllListeners.push new Listener(
       @,
-      #TODO this is dumb
-      ((msg) -> msg instanceof CatchAllMessage),
+      ((msg) -> true),
       ((msg) -> msg.message = msg.message.message; callback msg)
     )
 
@@ -225,8 +225,10 @@ class Robot
           catch error
             @emit('error', error, new @Response(@, respondMessage, []))
 
-      if message not instanceof CatchAllMessage and not matched
-        @receive new CatchAllMessage(message)
+      if not matched
+        for listener in @catchAllListeners
+          listener.call(message)
+          break if message.done
 
   loadScripts: (scripts) ->
     @brainReady.then =>

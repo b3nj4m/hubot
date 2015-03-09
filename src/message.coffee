@@ -55,18 +55,10 @@ class LeaveMessage extends Message
 # id   - A String of the message ID.
 class TopicMessage extends TextMessage
 
-class CatchAllMessage extends Message
-  # Represents a message that no matchers matched.
-  #
-  # message - The original message.
-  constructor: (@message) ->
-    super @message.user
-
 module.exports = {
   Message
   TextMessage
   EnterMessage
   LeaveMessage
   TopicMessage
-  CatchAllMessage
 }
