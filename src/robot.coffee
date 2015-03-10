@@ -278,10 +278,10 @@ class Robot
 
     herokuUrl = process.env.HEROKU_URL
 
-    if not Url.parse(herokuUrl).protocol
-      herokuUrl = 'http://' + herokuUrl
-
     if herokuUrl
+      if not Url.parse(herokuUrl).protocol
+        herokuUrl = 'http://' + herokuUrl
+
       herokuUrl += '/' unless /\/$/.test herokuUrl
       @pingIntervalId = setInterval =>
         HttpClient.create("#{herokuUrl}brobbot/ping").post() (err, res, body) =>
