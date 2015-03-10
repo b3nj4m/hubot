@@ -1,3 +1,4 @@
+Url = require 'url'
 _ = require 'lodash'
 Q = require 'q'
 Fs = require 'fs'
@@ -276,6 +277,9 @@ class Robot
       @shutdown(1)
 
     herokuUrl = process.env.HEROKU_URL
+
+    if not Url.parse(herokuUrl).protocol
+      herokuUrl = 'http://' + herokuUrl
 
     if herokuUrl
       herokuUrl += '/' unless /\/$/.test herokuUrl
