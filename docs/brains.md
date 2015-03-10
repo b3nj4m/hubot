@@ -11,6 +11,10 @@ Most methods should return a promise.
 - [Redis](https://npmjs.org/package/brobbot-redis-brain)
 - [PostgreSQL](https://npmjs.org/package/brobbot-pg-brain)
 
+## Tests
+
+If you want to write a brain module for brobbot, there are [some tests](https://npmjs.org/package/brobbot-brain-tests) you can run to verify functionality.
+
 ## API
 
 ### ready
