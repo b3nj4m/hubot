@@ -11,8 +11,8 @@ describe('robot', function() {
   });
 
   it('should have correct number of listeners', function() {
-    assert.equal(4, helper.listeners.length);
-    assert.equal(1, helper.respondListeners.length);
+    assert.equal(4, helper.listeners.text.length);
+    assert.equal(1, helper.listeners.respond.length);
     assert.equal(0, helper.sent.length);
   });
 

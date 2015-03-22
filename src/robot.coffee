@@ -11,7 +11,7 @@ User = require './user'
 RobotSegment = require './robot-segment'
 Response = require './response'
 {Listener,TextListener} = require './listener'
-{EnterMessage,LeaveMessage,TopicMessage,TextMessage} = require './message'
+{TextMessage} = require './message'
 
 BROBBOT_DEFAULT_ADAPTERS = [
   'campfire'
@@ -54,9 +54,16 @@ class Robot
     @adapter = null
     @Response = Response
     @commands = []
-    @listeners = []
-    @respondListeners = []
-    @catchAllListeners = []
+
+    @listeners = {
+      text: [],
+      respond: [],
+      topic: [],
+      enter: [],
+      leave: [],
+      catch: []
+    }
+
     #TODO namespaced logger per-script
     @logger = new Log(process.env.BROBBOT_LOG_LEVEL or 'info')
     @pingIntervalId = null
@@ -97,7 +104,7 @@ class Robot
   #
   # Returns nothing.
   hear: (regex, callback) ->
-    @listeners.push new TextListener(@, regex, callback)
+    @listeners.text.push new TextListener(@, regex, callback)
 
   # Public: Adds a Listener that attempts to match incoming messages directed
   # at the robot based on a Regex. All regexes treat patterns like they begin
@@ -108,7 +115,7 @@ class Robot
   #
   # Returns nothing.
   respond: (regex, callback) ->
-    @respondListeners.push new TextListener(@, regex, callback)
+    @listeners.respond.push new TextListener(@, regex, callback)
 
   # Public: Adds a Listener that triggers when anyone enters the room.
   #
@@ -116,9 +123,9 @@ class Robot
   #
   # Returns nothing.
   enter: (callback) ->
-    @listeners.push new Listener(
+    @listeners.enter.push new Listener(
       @,
-      ((msg) -> msg instanceof EnterMessage),
+      ((msg) -> true),
       callback
     )
 
@@ -128,9 +135,9 @@ class Robot
   #
   # Returns nothing.
   leave: (callback) ->
-    @listeners.push new Listener(
+    @listeners.leave.push new Listener(
       @,
-      ((msg) -> msg instanceof LeaveMessage),
+      ((msg) -> true),
       callback
     )
 
@@ -140,9 +147,9 @@ class Robot
   #
   # Returns nothing.
   topic: (callback) ->
-    @listeners.push new Listener(
+    @listeners.topic.push new Listener(
       @,
-      ((msg) -> msg instanceof TopicMessage),
+      ((msg) -> true),
       callback
     )
 
@@ -176,7 +183,7 @@ class Robot
   #
   # Returns nothing.
   catchAll: (callback) ->
-    @catchAllListeners.push new Listener(
+    @listeners.catch.push new Listener(
       @,
       ((msg) -> true),
       ((msg) -> msg.message = msg.message.message; callback msg)
@@ -202,7 +209,7 @@ class Robot
 
       message.isAddressedToBrobbot = @messageIsToMe message
 
-      for listener in @listeners
+      for listener in @listeners[message._type]
         try
           matched = listener.call(message) or matched
           break if message.done
@@ -219,7 +226,7 @@ class Robot
         respondMessage = new TextMessage message.user, respondText, message.id
         respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot
 
-        for listener in @respondListeners
+        for listener in @listeners.respond
           try
             matched = listener.call(respondMessage) or matched
             break if respondMessage.done
@@ -227,7 +234,7 @@ class Robot
             @emit('error', error, new @Response(@, respondMessage, []))
 
       if not matched
-        for listener in @catchAllListeners
+        for listener in @listeners.catch
           listener.call(message)
           break if message.done
 
