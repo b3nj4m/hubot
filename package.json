@@ -23,8 +23,8 @@
     "lodash": "~2.4.1"
   },
   "engines": {
-    "node": ">= 0.10.x",
-    "npm": ">= 2.0.x"
+    "node": ">= 0.12.x",
+    "npm": ">= 2.x"
   },
   "main": "./index",
   "bin": {

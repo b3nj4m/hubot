@@ -10,393 +10,446 @@ class Brain extends EventEmitter
   #
   # Returns a new Brain with no external storage.
   constructor: (@robot) ->
-    @data =
-      users: {}
-      _private: {}
-
+    @users = new Map()
+    @data = new Map()
     @ready = Q(@)
 
   # Reset the datastore. destroys all data.
   #
   # returns promise
   reset: ->
-    @data.users = {}
-    @data._private = {}
+    @users = new Map()
+    @data = new Map()
     Q()
 
-  # Public: get the length of the list stored at `key`
+  # get the length of the list stored at `key`
   #
   # Returns promise for int
   llen: (key) ->
-    Q(@data._private[@key key]?.length)
+    list = @data.get(@key(key))
 
-  # Public: set the list value at the specified index
+    if list is undefined
+      Q(null)
+    else
+      Q(list.length)
+
+  # set the list value at the specified index
   #
   # Returns promise
   lset: (key, index, value) ->
-    key = @key key
+    key = @key(key)
+    list = @data.get(key)
 
-    if not @data._private[key]
-      @data._private[key] = []
+    if list is undefined
+      list = []
+      @data.set(key, list)
 
-    @data._private[@key key][index] = @serialize value
+    list[index] = @serialize(value)
     Q()
 
-  # Public: insert a value into the list before or after the pivot element.
+  # insert a value into the list before or after the pivot element.
   #
   # Returns promise
   linsert: (key, placement, pivot, value) ->
-    key = @key key
-    if @data._private[key] is undefined
-      @data._private[key] = []
+    key = @key(key)
+    list = @data.get(key)
 
-    pivot = @serialize(pivot)
+    if list isnt undefined
+      pivot = @serialize(pivot)
 
-    index = _.findIndex(@data._private[key], (val) => val is pivot)
+      index = _.findIndex(list, (val) => val is pivot)
 
-    if index > -1
-      if placement is 'AFTER'
-        index = index + 1
-      @data._private[key].splice(index, 0, @serialize(value))
+      if index > -1
+        if placement is 'AFTER'
+          index = index + 1
+        list.splice(index, 0, @serialize(value))
 
     Q()
 
-  # Public: push a new value onto the left-side of the list
+  # push a new value onto the left-side of the list
   #
   # Returns promise
   lpush: (key, value) ->
-    key = @key key
-    if @data._private[key] is undefined
-      @data._private[key] = []
+    key = @key(key)
+    list = @data.get(key)
 
-    @data._private[key].unshift(@serialize value)
+    if list is undefined
+      list = []
+      @data.set(key, list)
+
+    list.unshift(@serialize(value))
     Q()
 
-  # Public: push a new value onto the right-side of the list
+  # push a new value onto the right-side of the list
   #
   # Returns promise
   rpush: (key, value) ->
-    key = @key key
-    if @data._private[key] is undefined
-      @data._private[key] = []
+    key = @key(key)
+    list = @data.get(key)
 
-    @data._private[key].push(@serialize value)
+    if list is undefined
+      list = []
+      @data.set(key, list)
+
+    list.push(@serialize(value))
     Q()
 
-  # Public: pop a value off of the left-side of the list
+  # pop a value off of the left-side of the list
   #
   # Returns promise for list item
   lpop: (key) ->
-    Q(@deserialize(@data._private[@key key]?.shift()))
+    Q(@deserialize(@data.get(@key(key))?.shift()))
 
-  # Public: pop a value off of the right-side of the list
+  # pop a value off of the right-side of the list
   #
   # Returns promise for list item
   rpop: (key) ->
-    Q(@deserialize(@data._private[@key key]?.pop()))
+    Q(@deserialize(@data.get(@key(key))?.pop()))
 
-  # Public: get a list item by index
+  # get a list item by index
   #
   # Returns promise for list item
   lindex: (key, index) ->
-    Q(@deserialize(@data._private[@key key]?[index] or null))
+    Q(@deserialize(@data.get(@key(key))?[index] or null))
 
-  # Public: get an entire list
+  # get an entire list
   #
   # Returns promise for array
   lgetall: (key) ->
     @lrange(key, 0, -1)
 
-  # Public: get a slice of the list
+  # get a slice of the list
   #
   # Returns promise for array
   lrange: (key, start, end) ->
-    key = @key key
+    list = @data.get(@key(key))
+
+    if list is undefined
+      return Q(null)
 
     if end < 0
-      end = @data._private[key]?.length + end
+      end = list.length + end
 
-    Q(_.map(@data._private[key]?.slice(start, end + 1), @deserialize.bind(@)))
+    Q(_.map(list.slice(start, end + 1), @deserialize.bind(@)))
 
-  # Public: remove values from a list
+  # remove values from a list
   #
   # Returns promise
   lrem: (key, value) ->
-    key = @key key
-    @data._private[key] = _.without(@data._private[key], @serialize(value))
+    list = @data.get(@key(key))
+
+    if list
+      value = @serialize(value)
+      index = _.findIndex(list, (val) -> val is value)
+      if index > -1
+        list.splice(index, 1)
     Q()
 
-  # Public: Add a member to the set specified by `key`
+  # Add a member to the set specified by `key`
   #
   # Returns promise
   sadd: (key, value) ->
-    key = @key key
-    if @data._private[key] is undefined
-      @data._private[key] = []
+    key = @key(key)
+    set = @data.get(key)
 
-    value = @serialize(value)
+    if set is undefined
+      set = new Set()
+      @data.set(key, set)
 
-    if not _.contains(@data._private[key], value)
-      @data._private[key].push(value)
+    set.add(@serialize(value))
 
     Q()
 
-  # Public: Test whether the member is in the set
+  # Test whether the member is in the set
   #
   # Returns promise for boolean
   sismember: (key, value) ->
-    Q(_.contains(@data._private[key], @serialize(value)))
+    set = @data.get(@key(key))
+    if not set
+      Q(null)
+    else
+      Q(set.has(@serialize(value)))
 
-  # Public: Remove a member from the set
+  # Remove a member from the set
   #
   # Returns promise
   srem: (key, value) ->
-    key = @key(key)
-    value = @serialize(value)
-    index = _.findIndex(@data._private[key], (val) -> val is value)
-    if index > -1
-      @data._private[key].splice(index, 1)
+    set = @data.get(@key(key))
+
+    if set
+      set.delete(@serialize(value))
 
     Q()
 
-  # Public: Get the size of the set
+  # Get the size of the set
   #
   # Returns promise for int
   scard: (key) ->
-    key = @key key
-
-    if @data._private[key]
-      Q(@data._private[key].length)
+    set = @data.get(@key(key))
+    if set is undefined
+      Q(null)
     else
-      Q(0)
+      Q(set.size)
 
-  # Public: Get and remove a random member from the set
+  # Get and remove a random member from the set
   #
   # Returns promise for a set member
   spop: (key) ->
-    key = @key key
+    set = @data.get(@key(key))
     
-    if @data._private[key] is undefined
+    if set is undefined
       return Q(null)
 
-    index = _.random(0, @data._private[key].length - 1)
-    item = @data._private[key][index]
+    index = _.random(0, set.size - 1)
+    item = set.values()[index]
 
-    @data._private[key].splice(index, 1)
+    set.delete(item)
 
     Q(@deserialize(item))
 
-  # Public: Get a random member from the set
+  # Get a random member from the set
   #
   # Returns promise for a set member
   srandmember: (key) ->
-    key = @key key
-    if @data._private[key] is undefined or @data._private[key].length is 0
+    set = @data.get(@key(key))
+    if set is undefined or set.size is 0
       return Q(null)
 
-    Q(@deserialize(@data._private[key][_.random(0, @data._private[key].length - 1)]))
+    Q(@deserialize(set.values()[_.random(0, set.size - 1)]))
 
-  # Public: Get all the members of the set
+  # Get all the members of the set
   #
   # Returns promise for array
   smembers: (key) ->
-    Q(_.map(@data._private[@key key], @deserialize.bind(@)))
+    @data.get(@key(key))?.values() or null
 
-  # Public: get all the keys, optionally restricted to keys prefixed with `searchKey`
+  # get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
   # Returns promise for array
   keys: (searchKey = '') ->
-    searchKey = @key searchKey
-    Q(_.map(_.filter(_.keys(@data._private), (key) -> key.indexOf(searchKey) is 0), @unkey.bind(@)))
+    searchKey = @key(searchKey)
+    Q(_.map(_.filter(@data.keys(), (key) -> key.indexOf(searchKey) is 0), @unkey.bind(@)))
 
-  # Public: transform a key from internal brain key, to user-facing key
+  # transform a key from internal brain key, to user-facing key
   #
   # Returns string
   unkey: (key) ->
     key
 
-  # Public: transform the key for internal use
+  # transform the key for internal use
   # overridden by brain-segment
   #
   # Returns string.
   key: (key) ->
     key
 
-  # Public: get the key for the users
+  # get the key for the users
   #
   # Returns string.
   usersKey: () ->
     'users'
 
-  # Public: Store key-value pair under the private namespace and extend
+  # Store key-value pair under the private namespace and extend
   # existing.
   #
   # Returns promise
   set: (key, value) ->
-    if value is undefined
-      _.each key, (v, k) =>
-        @set k, v
-    else
-      @data._private[@key key] = @serialize(value)
-
+    @data.set(@key(key), @serialize(value))
     Q()
 
-  # Public: Get value by key from the private namespace in @data
+  # Get value by key from the private namespace in @data
   # or return null if not found.
   #
   # Returns promise
   get: (key) ->
-    Q(@deserialize(@data._private[@key key] ? null))
+    Q(@deserialize(@data.get(@key(key)) ? null))
 
-  # Public: Check whether the given key has been set
+  # Get the type of the value at `key`
+  #
+  # Returns promise
+  type: (key) ->
+    val = @deserialize(@data.get(@key(key)))
+
+    if val is undefined
+      null
+    else if val instanceof Map
+      'hash'
+    else if val instanceof Set
+      'set'
+    else if _.isArray(val)
+      'list'
+    else
+      'object'
+
+  # Check whether the given key has been set
   #
   # Return promise for boolean
   exists: (key) ->
-    Q(@data._private[@key key] isnt undefined)
+    Q(@data.has(@key(key)))
 
-  # Public: increment the value by num atomically
+  # increment the value by num atomically
   #
   # Returns promise
   incrby: (key, num) ->
-    key = @key key
-    @data._private[key] = (@data._private[key] or 0) + num
-    Q(@data._private[key])
+    key = @key(key)
+    @data.set(key, (@data.get(key) or 0) + num)
+    Q(@data.get(key))
 
-  # Public: Get all the keys for the given hash table name
+  # Get all the keys for the given hash table name
   #
   # Returns promise for array.
   hkeys: (table) ->
-    Q(_.keys(@data._private[@key table] or {}))
+    Q(@data.get(@key(table))?.keys() or null)
 
-  # Public: Get all the values for the given hash table name
+  # Get all the values for the given hash table name
   #
   # Returns promise for array.
   hvals: (table) ->
-    Q(_.map(@data._private[@key table] or {}, @deserialize.bind(@)))
+    val = @data.get(@key(table))
+    if val is undefined
+      Q(null)
+    else
+      Q(_.map(val.values(), @deserialize.bind(@)))
 
-  # Public: get the size of the hash table.
+  # get the size of the hash table.
   #
   # Returns promise for int
   hlen: (table) ->
-    Q(_.size(@data._private[@key table]))
+    val = @data.get(@key(table))
+    if val is undefined
+      Q(null)
+    else
+      Q(val.size)
 
-  # Public: Set a value in the specified hash table
+  # Set a value in the specified hash table
   #
   # Returns promise for the value.
   hset: (table, key, value) ->
-    table = @key table
-    @data._private[table] = @data._private[table] or {}
-    @data._private[table][key] = @serialize value
+    table = @key(table)
+    val = @data.get(table)
+
+    if val is undefined
+      val = new Map()
+      @data.set(table, val)
+
+    val.set(key, @serialize(value))
+
     Q()
 
-  # Public: Get a value from the specified hash table.
+  # Get a value from the specified hash table.
   #
   # Returns: promise for the value.
   hget: (table, key) ->
-    Q(@deserialize @data._private[@key table]?[key])
+    val = @data.get(@key(table))
+    if val is undefined
+      Q(null)
+    else
+      Q(@deserialize(val.get(key)))
 
-  # Public: Delete a field from a hash table
+  # Delete a field from a hash table
   #
   # Returns promise
   hdel: (table, key) ->
-    delete @data._private[@key table]?[key]
+    val = @data.get(@key(table))
+    if val isnt undefined
+      val.delete(key)
     Q()
 
-  # Public: Get the whole hash table as an object.
+  # Get the whole hash table as a Map.
   #
-  # Returns: promise for object.
+  # Returns: promise for Map.
   hgetall: (table) ->
-    Q(_.clone(_.mapValues(@data._private[@key table], @deserialize.bind @)))
+    Q(new Map(@data.get(@key(table))?.entries() or null))
 
-  # Public: increment the hash value by num atomically
+  # increment the hash value by num atomically
   #
   # Returns promise
   hincrby: (table, key, num) ->
-    table = @key table
-    @data._private[table] = @data._private[table] or {}
-    @data._private[table][key] = (@data._private[table][key] or 0) + num
-    Q(@data._private[table][key])
+    table = @key(table)
+    val = @data.get(table)
 
-  # Public: Remove value by key from the private namespace in @data
+    if val is undefined
+      val = new Map()
+      @data.set(table, val)
+
+    val.set(key, (val.get(key) or 0) + num
+    Q(val.get(key))
+
+  # Remove value by key from the private namespace in @data
   # if it exists
   #
   # Returns promise
   remove: (key) ->
-    delete @data._private[@key key]
+    @data.delete(@key(key))
     Q()
   # alias for remove
   del: (key) ->
-    @remove key
+    @remove(key)
 
-  # Public: nothin to close
+  # nothin to close
   #
   # Returns promise
   close: ->
     Q()
 
-  # Public: Perform any necessary pre-set serialization on a value
+  # Perform any necessary pre-set serialization on a value
   #
   # Returns serialized value
   serialize: (value) ->
     JSON.stringify(value)
 
-  # Public: Perform any necessary post-get deserialization on a value
+  # Perform any necessary post-get deserialization on a value
   #
   # Returns deserialized value
   deserialize: (value) ->
     JSON.parse(value)
 
-  # Public: Get an Array of User objects stored in the brain.
+  # Get an Array of User objects stored in the brain.
   #
   # Returns promise for an Array of User objects.
   users: ->
-    Q(@data.users)
+    Q(@users)
 
-  # Public: Add a user to the data-store
+  # Add a user to the data-store
   #
   # Returns promise for user
   addUser: (user) ->
-    @data.users[user.id] = user
+    @users.set(user.id, user)
     Q(user)
 
-  # Public: Get or create a User object given a unique identifier.
+  # Get or create a User object given a unique identifier.
   #
   # Returns promise for a User instance of the specified user.
   userForId: (id, options) ->
-    user = @data.users[id]
+    user = @users.get(id)
 
-    if !user or (options and options.room and (user.room isnt options.room))
+    if user is undefined or (options and options.room and (user.room isnt options.room))
       return @addUser(new User(id, options))
 
     Q(user)
 
-  # Public: Get a User object given a name.
+  # Get a User object given a name.
   #
   # Returns promise for a User instance for the user with the specified name.
   userForName: (name) ->
-    result = null
     lowerName = name.toLowerCase()
-    for k of (@data.users or { })
-      userName = @data.users[k].name
-      if userName and userName.toString().toLowerCase() is lowerName
-        result = @data.users[k]
-    Q(result)
+    user = _.find @users.values(), (user) ->
+      user.name and user.name.toString().toLowerCase() is lowerName
+    Q(user or null)
 
-  # Public: Get all users whose names match fuzzyName. Currently, match
+  # Get all users whose names match fuzzyName. Currently, match
   # means 'starts with', but this could be extended to match initials,
   # nicknames, etc.
   #
   # Returns promise an Array of User instances matching the fuzzy name.
   usersForRawFuzzyName: (fuzzyName) ->
     lowerFuzzyName = fuzzyName.toLowerCase()
-    results = []
-    for key, user of (@data.users or {})
-      if user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) is 0
-        results.push user
+    users = _.filter @users.values(), (user) ->
+      user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) is 0
 
-    Q(results)
+    Q(users)
 
-  # Public: If fuzzyName is an exact match for a user, returns an array with
+  # If fuzzyName is an exact match for a user, returns an array with
   # just that user. Otherwise, returns an array of all users for which
   # fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
   #
@@ -409,7 +462,7 @@ class Brain extends EventEmitter
 
       Q(matchedUsers)
 
-  # Public: Return a brain segment bound to the given key-prefix.
+  # Return a brain segment bound to the given key-prefix.
   #
   # Returns BrainSegment
   segment: (segment) ->

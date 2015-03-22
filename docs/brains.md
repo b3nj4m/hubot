@@ -171,6 +171,12 @@ Check whether the key has been set.
 
 Returns promise for boolean.
 
+### type(key)
+
+Check the type of the value set for `key`.
+
+Returns promise for string ('object'|'list'|'set'|'hash')
+
 ### incrby(key, num)
 
 increment the value by `num` atomically.
