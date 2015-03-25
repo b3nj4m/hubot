@@ -221,7 +221,7 @@ class Brain extends EventEmitter
   #
   # Returns promise for array
   smembers: (key) ->
-    @_data.get(@key(key))?.values() or null
+    Q(@_data.get(@key(key))?.values() or null)
 
   # get all the keys, optionally restricted to keys prefixed with `searchKey`
   #
@@ -299,7 +299,11 @@ class Brain extends EventEmitter
   #
   # Returns promise for array.
   hkeys: (table) ->
-    Q(@_data.get(@key(table))?.keys() or null)
+    hash = @_data.get(@key(table))
+    if hash
+      Q(iterValues(hash.keys()))
+    else
+      Q(null)
 
   # Get all the values for the given hash table name
   #
