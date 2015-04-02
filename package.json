@@ -14,7 +14,6 @@
     "url": "https://github.com/b3nj4m/hubot.git"
   },
   "dependencies": {
-    "coffee-script": "1.6.3",
     "optparse": "1.0.4",
     "scoped-http-client": "0.9.8",
     "log": "1.4.0",
@@ -31,7 +30,7 @@
     "brobbot": "./bin/brobbot"
   },
   "scripts": {
-    "test": "mocha --compilers coffee:coffee-script ./test/index.js"
+    "test": "mocha ./test/index.js"
   },
   "devDependencies": {
     "mocha": "^2.2.0"
