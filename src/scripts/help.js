@@ -3,10 +3,10 @@
 /*
  * Description:
  *   Generates help commands for Brobbot.
-#
+ *
  * URLS:
  *   /brobbot/help
-#
+ *
  * Notes:
  *   These commands are grabbed from comment blocks at the top of each file.
  */

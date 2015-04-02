@@ -12,7 +12,7 @@
 
 
   /*
-  #TODO hooks for testing expected responses
+   *TODO hooks for testing expected responses
    */
 
   Listener = (function() {
@@ -22,7 +22,7 @@
     /*
      * Listeners receive every message from the chat source and decide if they
      * want to act on it.
-    #
+     *
      * robot    - A Robot instance.
      * matcher  - A Function that determines if this listener should trigger the
      *            callback.
@@ -41,9 +41,9 @@
     /*
      * Public: Determines if the listener likes the content of the message. If
      * so, a Response built from the given Message is queued for processing.
-    #
+     *
      * message - A Message instance.
-    #
+     *
      * Returns false or the result of queueing the response
      */
 
@@ -65,7 +65,7 @@
 
     /*
      * Public: queue a response for processing
-    #
+     *
      * Returns result of exec or nothing.
      */
 
@@ -83,7 +83,7 @@
 
     /*
      * Public: process the reponse queue
-    #
+     *
      * Returns: nothing.
      */
 
@@ -113,7 +113,7 @@
     /*
      * TextListeners receive every message from the chat source and decide if they
      * want to act on it.
-    #
+     *
      * robot    - A Robot instance.
      * regex    - A Regex that determines if this listener should trigger the
      *            callback.

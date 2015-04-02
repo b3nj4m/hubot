@@ -28,7 +28,7 @@
 
     /*
      * Represents somewhat persistent storage for the robot. Extend this.
-    #
+     *
      * Returns a new Brain with no external storage.
      */
 
@@ -42,7 +42,7 @@
 
     /*
      * Reset the datastore. destroys all data.
-    #
+     *
      * returns promise
      */
 
@@ -55,7 +55,7 @@
 
     /*
      * get the length of the list stored at `key`
-    #
+     *
      * Returns promise for int
      */
 
@@ -72,7 +72,7 @@
 
     /*
      * set the list value at the specified index
-    #
+     *
      * Returns promise
      */
 
@@ -91,7 +91,7 @@
 
     /*
      * insert a value into the list before or after the pivot element.
-    #
+     *
      * Returns promise
      */
 
@@ -119,7 +119,7 @@
 
     /*
      * push a new value onto the left-side of the list
-    #
+     *
      * Returns promise
      */
 
@@ -138,7 +138,7 @@
 
     /*
      * push a new value onto the right-side of the list
-    #
+     *
      * Returns promise
      */
 
@@ -157,7 +157,7 @@
 
     /*
      * pop a value off of the left-side of the list
-    #
+     *
      * Returns promise for list item
      */
 
@@ -169,7 +169,7 @@
 
     /*
      * pop a value off of the right-side of the list
-    #
+     *
      * Returns promise for list item
      */
 
@@ -181,7 +181,7 @@
 
     /*
      * get a list item by index
-    #
+     *
      * Returns promise for list item
      */
 
@@ -193,7 +193,7 @@
 
     /*
      * get an entire list
-    #
+     *
      * Returns promise for array
      */
 
@@ -204,7 +204,7 @@
 
     /*
      * get a slice of the list
-    #
+     *
      * Returns promise for array
      */
 
@@ -223,7 +223,7 @@
 
     /*
      * remove values from a list
-    #
+     *
      * Returns promise
      */
 
@@ -245,7 +245,7 @@
 
     /*
      * Add a member to the set specified by `key`
-    #
+     *
      * Returns promise
      */
 
@@ -264,7 +264,7 @@
 
     /*
      * Test whether the member is in the set
-    #
+     *
      * Returns promise for boolean
      */
 
@@ -281,7 +281,7 @@
 
     /*
      * Remove a member from the set
-    #
+     *
      * Returns promise
      */
 
@@ -297,7 +297,7 @@
 
     /*
      * Get the size of the set
-    #
+     *
      * Returns promise for int
      */
 
@@ -314,7 +314,7 @@
 
     /*
      * Get and remove a random member from the set
-    #
+     *
      * Returns promise for a set member
      */
 
@@ -333,7 +333,7 @@
 
     /*
      * Get a random member from the set
-    #
+     *
      * Returns promise for a set member
      */
 
@@ -349,7 +349,7 @@
 
     /*
      * Get all the members of the set
-    #
+     *
      * Returns promise for array
      */
 
@@ -361,7 +361,7 @@
 
     /*
      * get all the keys, optionally restricted to keys prefixed with `searchKey`
-    #
+     *
      * Returns promise for array
      */
 
@@ -378,7 +378,7 @@
 
     /*
      * transform a key from internal brain key, to user-facing key
-    #
+     *
      * Returns string
      */
 
@@ -390,7 +390,7 @@
     /*
      * transform the key for internal use
      * overridden by brain-segment
-    #
+     *
      * Returns string.
      */
 
@@ -401,7 +401,7 @@
 
     /*
      * get the key for the users
-    #
+     *
      * Returns string.
      */
 
@@ -413,7 +413,7 @@
     /*
      * Store key-value pair under the private namespace and extend
      * existing.
-    #
+     *
      * Returns promise
      */
 
@@ -426,7 +426,7 @@
     /*
      * Get value by key from the private namespace in @_data
      * or return null if not found.
-    #
+     *
      * Returns promise
      */
 
@@ -438,7 +438,7 @@
 
     /*
      * Get the type of the value at `key`
-    #
+     *
      * Returns promise
      */
 
@@ -461,7 +461,7 @@
 
     /*
      * Check whether the given key has been set
-    #
+     *
      * Return promise for boolean
      */
 
@@ -472,7 +472,7 @@
 
     /*
      * increment the value by num atomically
-    #
+     *
      * Returns promise
      */
 
@@ -485,7 +485,7 @@
 
     /*
      * Get all the keys for the given hash table name
-    #
+     *
      * Returns promise for array.
      */
 
@@ -501,7 +501,7 @@
 
     /*
      * Get all the values for the given hash table name
-    #
+     *
      * Returns promise for array.
      */
 
@@ -518,7 +518,7 @@
 
     /*
      * get the size of the hash table.
-    #
+     *
      * Returns promise for int
      */
 
@@ -535,7 +535,7 @@
 
     /*
      * Set a value in the specified hash table
-    #
+     *
      * Returns promise for the value.
      */
 
@@ -554,7 +554,7 @@
 
     /*
      * Get a value from the specified hash table.
-    #
+     *
      * Returns: promise for the value.
      */
 
@@ -571,7 +571,7 @@
 
     /*
      * Delete a field from a hash table
-    #
+     *
      * Returns promise
      */
 
@@ -587,7 +587,7 @@
 
     /*
      * Get the whole hash table as a Map.
-    #
+     *
      * Returns: promise for Map.
      */
 
@@ -599,7 +599,7 @@
 
     /*
      * increment the hash value by num atomically
-    #
+     *
      * Returns promise
      */
 
@@ -618,7 +618,7 @@
 
     /*
      * delete the value at `key`
-    #
+     *
      * Returns promise
      */
 
@@ -639,7 +639,7 @@
 
     /*
      * nothin to close
-    #
+     *
      * Returns promise
      */
 
@@ -650,7 +650,7 @@
 
     /*
      * Perform any necessary pre-set serialization on a value
-    #
+     *
      * Returns serialized value
      */
 
@@ -661,7 +661,7 @@
 
     /*
      * Perform any necessary post-get deserialization on a value
-    #
+     *
      * Returns deserialized value
      */
 
@@ -672,7 +672,7 @@
 
     /*
      * Get an Array of User objects stored in the brain.
-    #
+     *
      * Returns promise for an Array of User objects.
      */
 
@@ -683,7 +683,7 @@
 
     /*
      * Add a user to the data-store
-    #
+     *
      * Returns promise for user
      */
 
@@ -695,7 +695,7 @@
 
     /*
      * Get or create a User object given a unique identifier.
-    #
+     *
      * Returns promise for a User instance of the specified user.
      */
 
@@ -711,7 +711,7 @@
 
     /*
      * Get a User object given a name.
-    #
+     *
      * Returns promise for a User instance for the user with the specified name.
      */
 
@@ -729,7 +729,7 @@
      * Get all users whose names match fuzzyName. Currently, match
      * means 'starts with', but this could be extended to match initials,
      * nicknames, etc.
-    #
+     *
      * Returns promise an Array of User instances matching the fuzzy name.
      */
 
@@ -747,7 +747,7 @@
      * If fuzzyName is an exact match for a user, returns an array with
      * just that user. Otherwise, returns an array of all users for which
      * fuzzyName is a raw fuzzy match (see usersForRawFuzzyName).
-    #
+     *
      * Returns promise an Array of User instances matching the fuzzy name.
      */
 
@@ -768,7 +768,7 @@
 
     /*
      * Return a brain segment bound to the given key-prefix.
-    #
+     *
      * Returns BrainSegment
      */
 

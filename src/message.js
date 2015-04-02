@@ -10,7 +10,7 @@
 
     /*
      * Represents an incoming message from the chat.
-    #
+     *
      * user - A User instance that sent the message.
      */
 
@@ -23,7 +23,7 @@
 
     /*
      * Indicates that no other Listener should be called on this object
-    #
+     *
      * Returns nothing.
      */
 
@@ -43,7 +43,7 @@
 
     /*
      * Represents an incoming message from the chat.
-    #
+     *
      * user - A User instance that sent the message.
      * text - A String message.
      * id   - A String of the message ID.
@@ -59,9 +59,9 @@
 
     /*
      * Determines if the message matches the given regex.
-    #
+     *
      * regex - A Regex to check.
-    #
+     *
      * Returns a Match object or null.
      */
 
@@ -72,7 +72,7 @@
 
     /*
      * String representation of a TextMessage
-    #
+     *
      * Returns the message text
      */
 
@@ -87,7 +87,7 @@
 
   /*
    * Represents an incoming user entrance notification.
-  #
+   *
    * user - A User instance for the user who entered.
    * text - Always null.
    * id   - A String of the message ID.
@@ -109,7 +109,7 @@
 
   /*
    * Represents an incoming user exit notification.
-  #
+   *
    * user - A User instance for the user who left.
    * text - Always null.
    * id   - A String of the message ID.
@@ -131,7 +131,7 @@
 
   /*
    * Represents an incoming topic change notification.
-  #
+   *
    * user - A User instance for the user who changed the topic.
    * text - A String of the new topic
    * id   - A String of the message ID.

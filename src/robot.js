@@ -41,13 +41,13 @@
     /*
      * Robots receive messages from a chat source (Campfire, irc, etc), and
      * dispatch them to matching listeners.
-    #
+     *
      * scripts - An array of string modules names to load
      * adapter - A string adapter name or an adapter constructor.
      * brain - A string brain name or a brain constructor.
      * httpd - A boolean whether to enable the HTTP daemon.
      * name - A string of the robot name, defaults to Brobbot.
-    #
+     *
      * Returns nothing.
      */
     function Robot(scripts, adapter, brain, httpd, name) {
@@ -71,7 +71,7 @@
       };
 
       /*
-      #TODO namespaced logger per-script
+       *TODO namespaced logger per-script
        */
       this.logger = new Log(process.env.BROBBOT_LOG_LEVEL || 'info');
       this.pingIntervalId = null;
@@ -110,10 +110,10 @@
     /*
      * Public: Adds a Listener that attempts to match incoming messages based on
      * a Regex.
-    #
+     *
      * regex    - A Regex that determines if the callback should be called.
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -126,10 +126,10 @@
      * Public: Adds a Listener that attempts to match incoming messages directed
      * at the robot based on a Regex. All regexes treat patterns like they begin
      * with a '^'
-    #
+     *
      * regex    - A Regex that determines if the callback should be called.
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -140,9 +140,9 @@
 
     /*
      * Public: Adds a Listener that triggers when anyone enters the room.
-    #
+     *
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -155,9 +155,9 @@
 
     /*
      * Public: Adds a Listener that triggers when anyone leaves the room.
-    #
+     *
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -170,9 +170,9 @@
 
     /*
      * Public: Adds a Listener that triggers when anyone changes the topic.
-    #
+     *
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -186,9 +186,9 @@
     /*
      * Public: Adds an error handler when an uncaught exception or user emitted
      * error event occurs.
-    #
+     *
      * callback - A Function that is called with the error object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -200,10 +200,10 @@
     /*
      * Calls and passes any registered error handlers for unhandled exceptions or
      * user emitted error events.
-    #
+     *
      * err - An Error object.
      * msg - An optional Response object that generated the error
-    #
+     *
      * Returns nothing.
      */
 
@@ -227,9 +227,9 @@
 
     /*
      * Public: Adds a Listener that triggers when no other text matchers match.
-    #
+     *
      * callback - A Function that is called with a Response object.
-    #
+     *
      * Returns nothing.
      */
 
@@ -254,10 +254,10 @@
 
     /*
      * Public: Passes the given message to any interested Listeners.
-    #
+     *
      * message - A Message instance. Listeners can flag this message as 'done' to
      *           prevent further execution.
-    #
+     *
      * Returns nothing.
      */
 
@@ -283,7 +283,7 @@
           if (message.isAddressedToBrobbot) {
 
             /*
-            #for respond listeners, chop off the brobbot's name/alias
+             *for respond listeners, chop off the brobbot's name/alias
              */
             respondText = message.text.replace(_this.nameRegex, '');
             if (_this.aliasRegex) {
@@ -353,7 +353,7 @@
 
     /*
      * Setup the Express server's defaults.
-    #
+     *
      * Returns nothing.
      */
 
@@ -407,7 +407,7 @@
 
     /*
      * Setup an empty router object
-    #
+     *
      * returns nothing
      */
 
@@ -441,9 +441,9 @@
 
     /*
      * Given a brain name, resolve to a module path
-    #
+     *
      * brain - string brain name
-    #
+     *
      * returns string path
      */
 
@@ -462,9 +462,9 @@
 
     /*
      * Load the brain Brobbot is going to use.
-    #
+     *
      * brain - A String of the brain name to use or a Brain constructor.
-    #
+     *
      * Returns promise.
      */
 
@@ -489,9 +489,9 @@
 
     /*
      * given an adapter name, resolve module path
-    #
+     *
      * adapter - adapter name string
-    #
+     *
      * returns string path
      */
 
@@ -510,9 +510,9 @@
 
     /*
      * Load the adapter Brobbot is going to use.
-    #
+     *
      * adapter - A String of the adapter name to use or an Adapter constructor.
-    #
+     *
      * Returns promise.
      */
 
@@ -537,7 +537,7 @@
 
     /*
      * Public: Help Commands for Running Scripts.
-    #
+     *
      * Returns an Array of help commands for running scripts.
      */
 
@@ -563,10 +563,10 @@
     /*
      * Public: A helper send function which delegates to the adapter's send
      * function.
-    #
+     *
      * user    - A User instance.
      * strings - One or more Strings for each message to send.
-    #
+     *
      * Returns nothing.
      */
 
@@ -580,10 +580,10 @@
     /*
      * Public: A helper reply function which delegates to the adapter's reply
      * function.
-    #
+     *
      * user    - A User instance.
      * strings - One or more Strings for each message to send.
-    #
+     *
      * Returns nothing.
      */
 
@@ -596,10 +596,10 @@
 
     /*
      * Public: A helper send function to message a room that the robot is in.
-    #
+     *
      * room    - String designating the room to message.
      * strings - One or more Strings for each message to send.
-    #
+     *
      * Returns nothing.
      */
 
@@ -616,11 +616,11 @@
     /*
      * Public: A wrapper around the EventEmitter API to make usage
      * semanticly better.
-    #
+     *
      * event    - The event name.
      * listener - A Function that is called with the event parameter
      *            when event happens.
-    #
+     *
      * Returns nothing.
      */
 
@@ -634,10 +634,10 @@
     /*
      * Public: A wrapper around the EventEmitter API to make usage
      * semanticly better.
-    #
+     *
      * event   - The event name.
      * args...  - Arguments emitted by the event
-    #
+     *
      * Returns nothing.
      */
 
@@ -650,7 +650,7 @@
 
     /*
      * Public: Kick off the event loop for the adapter
-    #
+     *
      * Returns nothing.
      */
 
@@ -666,7 +666,7 @@
 
     /*
      * Public: Gracefully shutdown the robot process
-    #
+     *
      * Returns nothing.
      */
 
@@ -698,29 +698,29 @@
      * modifying the request. This doesn't actually make a request though.
      * Once your request is assembled, you can call `get()`/`post()`/etc to
      * send the request.
-    #
+     *
      * url - String URL to access.
-    #
+     *
      * Examples:
-    #
+     *
      *     res.http("http://example.com")
-     *       # set a single header
+     *       // set a single header
      *       .header('Authorization', 'bearer abcdef')
-    #
-     *       # set multiple headers
+     *
+     *       // set multiple headers
      *       .headers(Authorization: 'bearer abcdef', Accept: 'application/json')
-    #
-     *       # add URI query parameters
+     *
+     *       // add URI query parameters
      *       .query(a: 1, b: 'foo & bar')
-    #
-     *       # make the actual request
+     *
+     *       // make the actual request
      *       .get() (err, res, body) ->
      *         console.log body
-    #
-     *       # or, you can POST data
+     *
+     *       // or, you can POST data
      *       .post(data) (err, res, body) ->
      *         console.log body
-    #
+     *
      * Returns a ScopedClient instance.
      */
 
