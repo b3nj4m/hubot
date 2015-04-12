@@ -33,7 +33,7 @@ var BROBBOT_DOCUMENTATION_SECTIONS = ['description', 'dependencies', 'configurat
 function Robot(scripts, adapter, brain, httpd, name) {
   var self = this;
 
-  if (name == null) {
+  if (name === undefined) {
     name = 'Brobbot';
   }
   this.name = name;
@@ -293,6 +293,8 @@ Robot.prototype.receive = function(message) {
 };
 
 Robot.prototype.loadScripts = function(scripts) {
+  var self = this;
+
   return this.brainReady.then(function() {
     return Q.all(_.map(scripts, function(script) {
       return self.loadScript(script);
@@ -607,7 +609,7 @@ Robot.prototype.shutdown = function(exitCode) {
 
   this.logger.info("shutting down...");
 
-  if (this.pingIntervalId != null) {
+  if (this.pingIntervalId !== undefined) {
     clearInterval(this.pingIntervalId);
   }
 

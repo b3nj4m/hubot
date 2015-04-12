@@ -113,7 +113,7 @@ function TextListener(robot, regex, callback) {
     if (message instanceof TextMessage) {
       return message.match(self.regex);
     }
-  });
+  };
 }
 
 TextListener.prototype = Object.create(Listener.prototype);

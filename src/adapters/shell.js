@@ -18,9 +18,10 @@ Shell.prototype.constructor = Shell;
 Shell.prototype.send = function(envelope /*, *strings */) {
   var strings = 2 <= arguments.length ? Array.prototype.slice.call(arguments, 1) : [];
   var str;
+  var i;
 
   if (process.platform !== 'win32') {
-    for (var i = 0; i < strings.length; i++) {
+    for (i = 0; i < strings.length; i++) {
       console.log("\x1b[01;32m" + strings[i] + "\x1b[0m");
     }
   }

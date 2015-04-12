@@ -81,7 +81,7 @@ Brain.prototype.lset = function(key, index, value) {
  */
 
 Brain.prototype.linsert = function(key, placement, pivot, value) {
-  var key = this.key(key);
+  key = this.key(key);
   var list = this._data.get(key);
   if (list) {
     pivot = this.serialize(pivot);
@@ -106,7 +106,7 @@ Brain.prototype.linsert = function(key, placement, pivot, value) {
  */
 
 Brain.prototype.lpush = function(key, value) {
-  var key = this.key(key);
+  key = this.key(key);
   var list = this._data.get(key);
   if (!list) {
     list = [];
@@ -124,7 +124,7 @@ Brain.prototype.lpush = function(key, value) {
  */
 
 Brain.prototype.rpush = function(key, value) {
-  var key = this.key(key);
+  key = this.key(key);
   var list = this._data.get(key);
   if (!list) {
     list = [];

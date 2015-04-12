@@ -74,7 +74,6 @@ Danger.prototype.reply = function(user /*, *strings */) {
 Danger.prototype.receive = function(text) {
   var user;
   if (typeof text === 'string') {
-    user = ;
     return Adapter.receive.call(this, new TextMessage(new User(1, {name: 'helper'}), text));
   }
   else {
