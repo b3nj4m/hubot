@@ -27,7 +27,7 @@
   },
   "main": "./index",
   "bin": {
-    "brobbot": "./bin/brobbot"
+    "brobbot": "./bin/brobbot.js"
   },
   "scripts": {
     "test": "mocha ./test/index.js"
