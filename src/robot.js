@@ -49,7 +49,7 @@ function Robot(scripts, adapter, brain, httpd, name) {
     topic: [],
     enter: [],
     leave: [],
-    "catch": []
+    catchall: []
   };
 
   /*
@@ -197,7 +197,7 @@ Robot.prototype.invokeErrorHandlers = function(err, msg) {
  * Returns nothing.
  */
 Robot.prototype.catchAll = function(callback) {
-  return this.listeners.catch.push(new Listener(this, function(msg) {
+  return this.listeners.catchall.push(new Listener(this, function(msg) {
     return true;
   }, function(msg) {
     msg.message = msg.message.message;
@@ -234,22 +234,14 @@ Robot.prototype.receive = function(message) {
   var self = this;
 
   return this.connected.then(function() {
-    var matched = false;
     var listeners = self.listeners[message._type];
+    var matchedRespondListeners;
 
     message.isAddressedToBrobbot = self.messageIsToMe(message);
 
-    for (var i = 0; i < listeners.length; i++) {
-      try {
-        matched = listeners[i].call(message) || matched;
-        if (message.done) {
-          break;
-        }
-      }
-      catch (err) {
-        self.emit('error', err, new self.Response(self, message, []));
-      }
-    }
+    var matchedListeners = _.filter(listeners, function(listener) {
+      return listener.matches(message);
+    });
 
     if (message.isAddressedToBrobbot) {
       //for respond listeners, chop off the brobbot's name/alias
@@ -262,33 +254,21 @@ Robot.prototype.receive = function(message) {
       var respondMessage = new TextMessage(message.user, respondText, message.id);
       respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot;
 
-      for (i = 0; i < self.listeners.respond.length; i++) {
-        try {
-          matched = self.listeners.respond[i].call(respondMessage) || matched;
-          if (respondMessage.done) {
-            break;
-          }
-        }
-        catch (err) {
-          self.emit('error', err, new self.Response(self, respondMessage, []));
-        }
-      }
+      matchedRespondListeners = _.filter(self.listeners.respond, function(listener) {
+        return listener.matches(message);
+      });
+    }
+    else {
+      matchedRespondListeners = [];
     }
 
-    if (!matched) {
-      var results = [];
+    console.log(matchedListeners, matchedRespondListeners);
+    message.isBrobbotCommand = message.isAddressedToBrobbot && (matchedListeners.length > 0 || matchedRespondListeners.length > 0);
 
-      for (i = 0; i < self.listeners.catch.length; i++) {
-        self.listeners.catch[i].call(message);
-        if (message.done) {
-          break;
-        }
-        else {
-          results.push(null);
-        }
-      }
-      return results;
-    }
+    _.each(matchedRespondListeners.concat(matchedListeners, self.listeners.catchall), function(listener) {
+      listener.process(message);
+      return !message.done;
+    });
   });
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "brobbot",
-  "version": "5.0.3",
+  "version": "6.0.0",
   "author": "brobbot",
   "keywords": [
     "brobbot",
@@ -27,7 +27,7 @@
   },
   "main": "./index",
   "bin": {
-    "brobbot": "./bin/brobbot"
+    "brobbot": "./bin/brobbot.js"
   },
   "scripts": {
     "test": "mocha ./test/index.js"

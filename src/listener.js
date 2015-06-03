@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var Q = require('q');
 var inspect = require('util').inspect;
 var TextMessage = require('./message').TextMessage;
@@ -13,7 +14,6 @@ var TextMessage = require('./message').TextMessage;
  *            callback.
  * callback - A Function that is triggered if the incoming message matches.
  */
-
 function Listener(robot, matcher, callback) {
   this.robot = robot;
   this.matcher = matcher;
@@ -25,6 +25,17 @@ function Listener(robot, matcher, callback) {
 Listener.prototype.queueSize = 100;
 
 /*
+ * Check whether this listener matches the message.
+ *
+ * message - the message instance
+ *
+ * returns boolean
+ */
+Listener.prototype.matches = function(message) {
+  return _.isFunction(this.matcher) ? this.matcher(message) : this.matcher;
+};
+
+/*
  * Public: Determines if the listener likes the content of the message. If
  * so, a Response built from the given Message is queued for processing.
  *
@@ -32,14 +43,12 @@ Listener.prototype.queueSize = 100;
  *
  * Returns false or the result of queueing the response
  */
-
-Listener.prototype.call = function(message) {
-  var match = this.matcher(message);
-  if (match) {
+Listener.prototype.process = function(message) {
+  if (this.matches(message)) {
     if (this.regex) {
       this.robot.logger.debug("Message '" + message + "' matched regex /" + this.regex.toString() + "/");
     }
-    return this.enqueue(new this.robot.Response(this.robot, message, match));
+    return this.enqueue(new this.robot.Response(this.robot, message, true));
   }
   else {
     if (this.regex) {
@@ -49,13 +58,11 @@ Listener.prototype.call = function(message) {
   }
 };
 
-
 /*
  * Public: queue a response for processing
  *
  * Returns result of exec or nothing.
  */
-
 Listener.prototype.enqueue = function(response) {
   if (this.inProgress.isPending() || this.queue.length > 0) {
     if (this.queue.length === this.queueSize) {
@@ -68,13 +75,11 @@ Listener.prototype.enqueue = function(response) {
   }
 };
 
-
 /*
  * Public: process the reponse queue
  *
  * Returns: nothing.
  */
-
 Listener.prototype.exec = function(response) {
   var self = this;
 
@@ -100,7 +105,6 @@ Listener.prototype.exec = function(response) {
  *            callback.
  * callback - A Function that is triggered if the incoming message matches.
  */
-
 function TextListener(robot, regex, callback) {
   Listener.apply(this, arguments);
 
