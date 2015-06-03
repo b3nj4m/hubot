@@ -236,6 +236,7 @@ Robot.prototype.receive = function(message) {
   return this.connected.then(function() {
     var listeners = self.listeners[message._type];
     var matchedRespondListeners;
+    var respondText = message.text;
 
     message.isAddressedToBrobbot = self.messageIsToMe(message);
 
@@ -245,29 +246,34 @@ Robot.prototype.receive = function(message) {
 
     if (message.isAddressedToBrobbot) {
       //for respond listeners, chop off the brobbot's name/alias
-      var respondText = message.text.replace(self.nameRegex, '');
-
-      if (self.aliasRegex) {
+      if (self.aliasRegex && self.aliasRegex.test(respondText)) {
         respondText = respondText.replace(self.aliasRegex, '');
+      }
+      else if (self.nameRegex.test(respondText)) {
+        respondText = respondText.replace(self.nameRegex, '');
       }
 
       var respondMessage = new TextMessage(message.user, respondText, message.id);
       respondMessage.isAddressedToBrobbot = message.isAddressedToBrobbot;
 
       matchedRespondListeners = _.filter(self.listeners.respond, function(listener) {
-        return listener.matches(message);
+        return listener.matches(respondMessage);
       });
     }
     else {
       matchedRespondListeners = [];
     }
 
-    console.log(matchedListeners, matchedRespondListeners);
     message.isBrobbotCommand = message.isAddressedToBrobbot && (matchedListeners.length > 0 || matchedRespondListeners.length > 0);
 
-    _.each(matchedRespondListeners.concat(matchedListeners, self.listeners.catchall), function(listener) {
+    _.each(matchedListeners.concat(self.listeners.catchall), function(listener) {
       listener.process(message);
       return !message.done;
+    });
+
+    _.each(matchedRespondListeners, function(listener) {
+      listener.process(respondMessage);
+      return !respondMessage.done;
     });
   });
 };
@@ -290,8 +296,7 @@ Robot.prototype.loadScript = function(script) {
     path = "brobbot-" + script;
     require.resolve(path);
   }
-  catch (_error) {
-    err = _error;
+  catch (err) {
     path = script;
   }
 
@@ -630,18 +635,20 @@ Robot.prototype.parseVersion = function() {
  *       .header('Authorization', 'bearer abcdef')
  *
  *       // set multiple headers
- *       .headers(Authorization: 'bearer abcdef', Accept: 'application/json')
+ *       .headers({Authorization: 'bearer abcdef', Accept: 'application/json'})
  *
  *       // add URI query parameters
- *       .query(a: 1, b: 'foo & bar')
+ *       .query({a: 1, b: 'foo & bar'})
  *
  *       // make the actual request
- *       .get() (err, res, body) ->
- *         console.log body
+ *       .get()(function(err, res, body) {
+ *         console.log(body);
+ *       })
  *
  *       // or, you can POST data
- *       .post(data) (err, res, body) ->
- *         console.log body
+ *       .post(data)(function(err, res, body) {
+ *         console.log(body);
+ *       });
  *
  * Returns a ScopedClient instance.
  */
