@@ -46,13 +46,13 @@ Listener.prototype.matches = function(message) {
 Listener.prototype.process = function(message) {
   if (this.matches(message)) {
     if (this.regex) {
-      this.robot.logger.debug("Message '" + message + "' matched regex /" + this.regex.toString() + "/");
+      this.robot.logger.debug("Message '" + message + "' matched regex " + this.regex.toString());
     }
     return this.enqueue(new this.robot.Response(this.robot, message, true));
   }
   else {
     if (this.regex) {
-      this.robot.logger.debug("Message '" + message + "' not matched regex /" + this.regex.toString() + "/");
+      this.robot.logger.debug("Message '" + message + "' not matched regex " + this.regex.toString());
     }
     return false;
   }
