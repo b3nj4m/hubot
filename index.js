@@ -22,6 +22,6 @@ module.exports = {
   CatchAllMessage: message.CatchAllMessage
 };
 
-module.exports.loadBot = function(adapterName, brainName, enableHttpd, botName) {
-  return new Robot(adapterName, brainName, enableHttpd, botName);
+module.exports.loadBot = function(scripts, adapterName, brainName, enableHttpd, botName) {
+  return new Robot(scripts, adapterName, brainName, enableHttpd, botName);
 };

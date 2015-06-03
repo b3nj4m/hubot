@@ -28,7 +28,7 @@ Message.prototype.finish = function() {
  * id   - A String of the message ID.
  */
 function TextMessage(user, text, id) {
-  Message.apply(this, arguments);
+  Message.call(this, user);
 
   this.user = user;
   this.text = text;
@@ -68,8 +68,8 @@ TextMessage.prototype.toString = function() {
  * id   - A String of the message ID.
  */
 
-function EnterMessage() {
-  Message.apply(this, arguments);
+function EnterMessage(user) {
+  Message.call(this, user);
 }
 
 EnterMessage.prototype = Object.create(Message.prototype);
@@ -84,8 +84,8 @@ EnterMessage.prototype._type = 'enter';
  * text - Always null.
  * id   - A String of the message ID.
  */
-function LeaveMessage() {
-  Message.apply(this, arguments);
+function LeaveMessage(user) {
+  Message.call(this, user);
 }
 
 LeaveMessage.prototype = Object.create(Message.prototype);
@@ -100,8 +100,8 @@ LeaveMessage.prototype._type = 'leave';
  * text - A String of the new topic
  * id   - A String of the message ID.
  */
-function TopicMessage() {
-  Message.apply(this, arguments);
+function TopicMessage(user) {
+  Message.call(this, user);
 }
 
 TopicMessage.prototype = Object.create(Message.prototype);

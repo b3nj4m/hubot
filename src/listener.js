@@ -37,13 +37,13 @@ Listener.prototype.call = function(message) {
   var match = this.matcher(message);
   if (match) {
     if (this.regex) {
-      this.robot.logger.debug("Message '" + message + "' matched regex /" + this.regex.toString() + "/");
+      this.robot.logger.debug("Message '" + message + "' matched regex " + this.regex.toString());
     }
     return this.enqueue(new this.robot.Response(this.robot, message, match));
   }
   else {
     if (this.regex) {
-      this.robot.logger.debug("Message '" + message + "' not matched regex /" + this.regex.toString() + "/");
+      this.robot.logger.debug("Message '" + message + "' not matched regex " + this.regex.toString());
     }
     return false;
   }
