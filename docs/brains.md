@@ -221,9 +221,9 @@ Returns promise.
 
 ### hgetall(table)
 
-Get the whole hash table as an object.
+Get the whole hash table as a Map.
 
-Returns promise for object.
+Returns promise for Map.
 
 ### hincrby(table, key, num)
 
