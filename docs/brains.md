@@ -7,7 +7,7 @@ Most methods should return a promise.
 
 ## Available brains
 
-- [dumb](../src/brains/dumb.coffee) (the default)
+- [dumb](../src/brains/dumb.js) (the default)
 - [Redis](https://npmjs.org/package/brobbot-redis-brain)
 - [PostgreSQL](https://npmjs.org/package/brobbot-pg-brain)
 

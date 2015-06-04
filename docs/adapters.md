@@ -18,7 +18,7 @@ to have yours added to the list:
 
 ## Writing Your Own adapter
 
-The best place to start is [src/adapter.coffee](../src/adapter.coffee), and inheriting from `Adapter`.
+The best place to start is [src/adapter.js](../src/adapter.js), and inheriting from `Adapter`.
 There is not as much documentation as could exist (yet!), so it is worth
 reviewing existing adapters as well as how brobbot internally uses an adapter.
 

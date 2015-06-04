@@ -15,7 +15,6 @@ accept, pull requests within a few days. We may suggest some changes or improvem
 
 Some things that will increase the chance that your pull request is accepted:
 
-* Use CoffeeScript [idioms](http://arcturo.github.io/library/coffeescript/04_idioms.html) and [style guide](https://github.com/polarmobile/coffeescript-style-guide)
 * Update the documentation: code comments, example code, guides. Basically,
   update anything is affected by your contribution.
 * Include any information that would be relevant to reproducing bugs, use cases for new features, etc.

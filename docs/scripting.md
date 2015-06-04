@@ -71,7 +71,7 @@ It wouldn't be called for:
 
 ## Send & reply
 
-The `msg` parameter is, despite the name, an instance of [Response](../src/response.coffee). With it, you can `send` a message back to the room the `msg` came from, `emote` a message to a room (If the given adapter supports it), or `reply` to the person that sent the message. For example:
+The `msg` parameter is, despite the name, an instance of [Response](../src/response.js). With it, you can `send` a message back to the room the `msg` came from, `emote` a message to a room (If the given adapter supports it), or `reply` to the person that sent the message. For example:
 
 ```javascript
 module.exports = function(robot) {
@@ -242,7 +242,7 @@ For those times that there isn't an API, there's always the possibility of scree
 
 ## Random
 
-A common pattern is to hear or respond to commands, and send with a random funny image or line of text from an array of possibilities. It's annoying to do this in JavaScript and CoffeeScript out of the box, so Brobbot includes a convenience method:
+A common pattern is to hear or respond to commands, and send with a random funny image or line of text from an array of possibilities. It's annoying to do this in JavaScript out of the box, so Brobbot includes a convenience method:
 
 ```javascript
 var lulz = ['lol', 'rofl', 'lmao'];
