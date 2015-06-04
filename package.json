@@ -14,12 +14,12 @@
     "url": "https://github.com/b3nj4m/hubot.git"
   },
   "dependencies": {
-    "optparse": "1.0.4",
-    "scoped-http-client": "0.9.8",
-    "log": "1.4.0",
     "express": "3.18.1",
-    "q": "~1.1.1",
-    "lodash": "~2.4.1"
+    "lodash": "^3.9.3",
+    "log": "1.4.0",
+    "optparse": "1.0.4",
+    "q": "^1.4.1",
+    "scoped-http-client": "0.9.8"
   },
   "engines": {
     "node": ">= 0.12.x",
