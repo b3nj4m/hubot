@@ -25,7 +25,7 @@ Helper.prototype.stop = function() {
 Helper.prototype.run = function() {
   var self = this;
 
-  return Robot.run.call(this).then(function() {
+  return Robot.prototype.run.call(this).then(function() {
     self.server = require('http').createServer(function(req, res) {
       return res.end('static');
     });
@@ -44,7 +44,7 @@ Helper.prototype.reset = function() {
 };
 
 function Danger() {
-  return Adapter.apply(this, arguments);
+  Adapter.apply(this, arguments);
 }
 
 Danger.prototype = Object.create(Adapter.prototype);
@@ -53,7 +53,7 @@ Danger.prototype.constructor = Danger;
 Danger.prototype.send = function(user /* *strings */) {
   var strings = 2 <= arguments.length ? Array.prototype.slice.call(arguments, 1) : [];
 
-  this.robot.sent.push(strings);
+  this.robot.sent = this.robot.sent.concat(strings);
 
   for (var i = 0; i < strings.length; i++) {
     this.robot.recipients.push(user);
@@ -74,10 +74,10 @@ Danger.prototype.reply = function(user /*, *strings */) {
 Danger.prototype.receive = function(text) {
   var user;
   if (typeof text === 'string') {
-    return Adapter.receive.call(this, new TextMessage(new User(1, {name: 'helper'}), text));
+    return Adapter.prototype.receive.call(this, new TextMessage(new User(1, {name: 'helper'}), text));
   }
   else {
-    return Adapter.receive.call(this, text);
+    return Adapter.prototype.receive.call(this, text);
   }
 };
 
@@ -91,7 +91,7 @@ if (!process.env.BROBBOT_LIVE) {
 
   //This changes ever HTTP request to hit the danger server above
   Helper.Response.prototype.http = function(url) {
-    return Response.http.call(this, url).host('127.0.0.1').port(9001);
+    return Response.prototype.http.call(this, url).host('127.0.0.1').port(9001);
   };
 }
 

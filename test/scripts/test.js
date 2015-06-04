@@ -9,7 +9,7 @@
     var assert;
     assert = require('assert');
     robot.hear(/static/i, function(msg) {
-      return msg.http('http://127.0.0.1/test').port(process.env.PORT || 9001).get()(function(err, res, body) {
+      return msg.http('http://127.0.0.1/test').get()(function(err, res, body) {
         return msg.send(body);
       });
     });

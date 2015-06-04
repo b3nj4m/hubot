@@ -271,7 +271,11 @@ Robot.prototype.receive = function(message) {
       respondMessage.isBrobbotCommand = message.isBrobbotCommand;
     }
 
-    _.each(matchedListeners.concat(self.listeners.catchall), function(listener) {
+    if (matchedListeners.length === 0 && matchedRespondListeners.length === 0) {
+      matchedListeners = self.listeners.catchall;
+    }
+
+    _.each(matchedListeners, function(listener) {
       listener.process(message);
       return !message.done;
     });
