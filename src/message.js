@@ -48,7 +48,7 @@ TextMessage.prototype._type = 'text';
  * Returns a Match object or null.
  */
 TextMessage.prototype.match = function(regex) {
-  return regex.test(this.text);
+  return this.text.match(regex);
 };
 
 /*

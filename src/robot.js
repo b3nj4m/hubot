@@ -237,6 +237,7 @@ Robot.prototype.receive = function(message) {
     var listeners = self.listeners[message._type];
     var matchedRespondListeners;
     var respondText = message.text;
+    var respondMessage = null;
 
     message.isAddressedToBrobbot = self.messageIsToMe(message);
 
@@ -265,6 +266,10 @@ Robot.prototype.receive = function(message) {
     }
 
     message.isBrobbotCommand = message.isAddressedToBrobbot && (matchedListeners.length > 0 || matchedRespondListeners.length > 0);
+
+    if (respondMessage) {
+      respondMessage.isBrobbotCommand = message.isBrobbotCommand;
+    }
 
     _.each(matchedListeners.concat(self.listeners.catchall), function(listener) {
       listener.process(message);

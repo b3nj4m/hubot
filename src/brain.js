@@ -696,10 +696,13 @@ Brain.prototype.userForName = function(name) {
  */
 
 Brain.prototype.usersForRawFuzzyName = function(fuzzyName) {
-  var lowerFuzzyName = fuzzyName.toLowerCase();
-  var users = _.filter(iterValues(this._users.values()), function(user) {
-    return user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) === 0;
-  });
+  var users = iterValues(this._users.values());
+  if (_.isString(fuzzyName) && fuzzyName !== '') {
+    var lowerFuzzyName = fuzzyName.toString().toLowerCase();
+    users = _.filter(users, function(user) {
+      return user.name.toLowerCase().lastIndexOf(lowerFuzzyName, 0) === 0;
+    });
+  }
   return Q(users);
 };
 
@@ -714,15 +717,17 @@ Brain.prototype.usersForRawFuzzyName = function(fuzzyName) {
 
 Brain.prototype.usersForFuzzyName = function(fuzzyName) {
   return this.usersForRawFuzzyName(fuzzyName).then(function(matchedUsers) {
-    var user;
-    var lowerFuzzyName = fuzzyName.toLowerCase();
-    for (var i = 0; i < matchedUsers.length; i++) {
-      user = matchedUsers[i];
-      if (user.name && user.name.toLowerCase() === lowerFuzzyName) {
-        return Q([user]);
+    if (_.isString(fuzzyName) && fuzzyName !== '') {
+      var user;
+      var lowerFuzzyName = fuzzyName.toLowerCase();
+      for (var i = 0; i < matchedUsers.length; i++) {
+        user = matchedUsers[i];
+        if (user.name && user.name.toLowerCase() === lowerFuzzyName) {
+          return Q([user]);
+        }
       }
     }
-    return Q(matchedUsers);
+    return matchedUsers;
   });
 };
 

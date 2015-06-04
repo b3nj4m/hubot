@@ -44,11 +44,13 @@ Listener.prototype.matches = function(message) {
  * Returns false or the result of queueing the response
  */
 Listener.prototype.process = function(message) {
-  if (this.matches(message)) {
+  var match = this.matches(message);
+
+  if (match) {
     if (this.regex) {
       this.robot.logger.debug("Message '" + message + "' matched regex " + this.regex.toString());
     }
-    return this.enqueue(new this.robot.Response(this.robot, message, true));
+    return this.enqueue(new this.robot.Response(this.robot, message, match));
   }
   else {
     if (this.regex) {
