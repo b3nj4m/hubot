@@ -10,6 +10,7 @@ Most methods should return a promise.
 - [dumb](../src/brains/dumb.js) (the default)
 - [Redis](https://npmjs.org/package/brobbot-redis-brain)
 - [PostgreSQL](https://npmjs.org/package/brobbot-pg-brain)
+- [SQLite](https://npmjs.org/package/brobbot-sqlite-brain)
 
 ## Tests
 
