@@ -4,8 +4,6 @@ Adapters are the interface to the service you want your brobbot to run on.
 
 ## Official Adapters
 
-Brobbot includes one official adapter:
-
 * [Shell](adapters/shell.md), i.e. for use with development
 * [Slack](https://npmjs.org/package/brobbot-slack)
 * [XMPP](https://npmjs.org/package/brobbot-xmpp)
