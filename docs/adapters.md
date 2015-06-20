@@ -7,14 +7,8 @@ Adapters are the interface to the service you want your brobbot to run on.
 Brobbot includes one official adapter:
 
 * [Shell](adapters/shell.md), i.e. for use with development
-
-## Third-party Adapters
-
-Third-party adapters are available as `npm` packages. Here is a list of known
-adapters, but please [submit an issue](https://github.com/b3nj4m/hubot/issues)
-to have yours added to the list:
-
-* [Slack](https://github.com/b3nj4m/hubot-slack)
+* [Slack](https://npmjs.org/package/brobbot-slack)
+* [XMPP](https://npmjs.org/package/brobbot-xmpp)
 
 ## Writing Your Own adapter
 
