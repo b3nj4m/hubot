@@ -306,7 +306,13 @@ Robot.prototype.loadScript = function(script) {
     require.resolve(path);
   }
   catch (err) {
-    path = script;
+    try {
+      path = Path.join(process.cwd(), script);
+      require.resolve(path);
+    }
+    catch (err) {
+      path = script;
+    }
   }
 
   try {
